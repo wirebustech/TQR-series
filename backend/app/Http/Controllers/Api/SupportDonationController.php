@@ -4,46 +4,60 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\SupportDonation;
 
 class SupportDonationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return response()->json(SupportDonation::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function show($id)
+    {
+        $donation = SupportDonation::findOrFail($id);
+        return response()->json($donation);
+    }
+
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'user_id' => 'nullable|exists:users,id',
+            'amount' => 'required|numeric',
+            'currency' => 'string|max:10',
+            'payment_method' => 'nullable|string|max:50',
+            'transaction_id' => 'nullable|string|max:100',
+            'donor_name' => 'nullable|string|max:255',
+            'donor_email' => 'nullable|email|max:255',
+            'message' => 'nullable|string',
+            'status' => 'in:pending,completed,failed',
+        ]);
+        $donation = SupportDonation::create($validated);
+        return response()->json($donation, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $donation = SupportDonation::findOrFail($id);
+        $validated = $request->validate([
+            'user_id' => 'nullable|exists:users,id',
+            'amount' => 'sometimes|required|numeric',
+            'currency' => 'string|max:10',
+            'payment_method' => 'nullable|string|max:50',
+            'transaction_id' => 'nullable|string|max:100',
+            'donor_name' => 'nullable|string|max:255',
+            'donor_email' => 'nullable|email|max:255',
+            'message' => 'nullable|string',
+            'status' => 'in:pending,completed,failed',
+        ]);
+        $donation->update($validated);
+        return response()->json($donation);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $donation = SupportDonation::findOrFail($id);
+        $donation->delete();
+        return response()->json(['message' => 'Support donation deleted successfully.']);
     }
 }

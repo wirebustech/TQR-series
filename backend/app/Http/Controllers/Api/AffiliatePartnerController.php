@@ -4,46 +4,52 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\AffiliatePartner;
 
 class AffiliatePartnerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return response()->json(AffiliatePartner::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function show($id)
+    {
+        $partner = AffiliatePartner::findOrFail($id);
+        return response()->json($partner);
+    }
+
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'website' => 'nullable|string|max:255',
+            'logo' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ]);
+        $partner = AffiliatePartner::create($validated);
+        return response()->json($partner, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $partner = AffiliatePartner::findOrFail($id);
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'website' => 'nullable|string|max:255',
+            'logo' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'boolean',
+        ]);
+        $partner->update($validated);
+        return response()->json($partner);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $partner = AffiliatePartner::findOrFail($id);
+        $partner->delete();
+        return response()->json(['message' => 'Affiliate partner deleted successfully.']);
     }
 }

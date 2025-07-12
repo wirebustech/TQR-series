@@ -4,46 +4,50 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\SocialMediaLink;
 
 class SocialMediaLinkController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        return response()->json(SocialMediaLink::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function show($id)
+    {
+        $link = SocialMediaLink::findOrFail($id);
+        return response()->json($link);
+    }
+
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'platform' => 'required|string|max:100',
+            'url' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
+        ]);
+        $link = SocialMediaLink::create($validated);
+        return response()->json($link, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $link = SocialMediaLink::findOrFail($id);
+        $validated = $request->validate([
+            'platform' => 'sometimes|required|string|max:100',
+            'url' => 'sometimes|required|string|max:255',
+            'icon' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
+        ]);
+        $link->update($validated);
+        return response()->json($link);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $link = SocialMediaLink::findOrFail($id);
+        $link->delete();
+        return response()->json(['message' => 'Social media link deleted successfully.']);
     }
 }
