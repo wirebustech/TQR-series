@@ -4,46 +4,65 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\MediaLibrary;
 
 class MediaLibraryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all media assets
     public function index()
     {
-        //
+        return response()->json(MediaLibrary::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Show a single media asset
+    public function show($id)
+    {
+        $media = MediaLibrary::findOrFail($id);
+        return response()->json($media);
+    }
+
+    // Create a new media asset
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'file_name' => 'required|string|max:255',
+            'file_path' => 'required|string|max:255',
+            'file_type' => 'required|string|max:50',
+            'file_size' => 'required|integer',
+            'mime_type' => 'required|string|max:100',
+            'alt_text' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'uploaded_by' => 'nullable|exists:users,id',
+        ]);
+        $media = MediaLibrary::create($validated);
+        return response()->json($media, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Update a media asset
+    public function update(Request $request, $id)
     {
-        //
+        $media = MediaLibrary::findOrFail($id);
+        $validated = $request->validate([
+            'file_name' => 'sometimes|required|string|max:255',
+            'file_path' => 'sometimes|required|string|max:255',
+            'file_type' => 'sometimes|required|string|max:50',
+            'file_size' => 'sometimes|required|integer',
+            'mime_type' => 'sometimes|required|string|max:100',
+            'alt_text' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'uploaded_by' => 'nullable|exists:users,id',
+        ]);
+        $media->update($validated);
+        return response()->json($media);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // Delete a media asset
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $media = MediaLibrary::findOrFail($id);
+        $media->delete();
+        return response()->json(['message' => 'Media asset deleted successfully.']);
     }
 }

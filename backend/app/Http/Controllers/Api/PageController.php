@@ -4,46 +4,65 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Page;
 
 class PageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all pages
     public function index()
     {
-        //
+        return response()->json(Page::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Show a single page
+    public function show($id)
+    {
+        $page = Page::findOrFail($id);
+        return response()->json($page);
+    }
+
+    // Create a new page
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:pages',
+            'description' => 'nullable|string',
+            'content' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'meta_keywords' => 'nullable|string|max:255',
+            'is_published' => 'boolean',
+        ]);
+        $validated['created_by'] = $request->user()->id;
+        $page = Page::create($validated);
+        return response()->json($page, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Update a page
+    public function update(Request $request, $id)
     {
-        //
+        $page = Page::findOrFail($id);
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'slug' => 'sometimes|required|string|max:255|unique:pages,slug,' . $id,
+            'description' => 'nullable|string',
+            'content' => 'nullable|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:255',
+            'meta_keywords' => 'nullable|string|max:255',
+            'is_published' => 'boolean',
+        ]);
+        $validated['updated_by'] = $request->user()->id;
+        $page->update($validated);
+        return response()->json($page);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // Delete a page
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $page = Page::findOrFail($id);
+        $page->delete();
+        return response()->json(['message' => 'Page deleted successfully.']);
     }
 }

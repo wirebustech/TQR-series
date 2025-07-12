@@ -4,46 +4,61 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Section;
 
 class SectionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all sections
     public function index()
     {
-        //
+        return response()->json(Section::all());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Show a single section
+    public function show($id)
+    {
+        $section = Section::findOrFail($id);
+        return response()->json($section);
+    }
+
+    // Create a new section
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'page_id' => 'required|exists:pages,id',
+            'title' => 'required|string|max:255',
+            'slug' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:100',
+            'content' => 'nullable|string',
+            'order' => 'integer',
+            'is_active' => 'boolean',
+        ]);
+        $section = Section::create($validated);
+        return response()->json($section, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Update a section
+    public function update(Request $request, $id)
     {
-        //
+        $section = Section::findOrFail($id);
+        $validated = $request->validate([
+            'page_id' => 'sometimes|required|exists:pages,id',
+            'title' => 'sometimes|required|string|max:255',
+            'slug' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:100',
+            'content' => 'nullable|string',
+            'order' => 'integer',
+            'is_active' => 'boolean',
+        ]);
+        $section->update($validated);
+        return response()->json($section);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // Delete a section
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $section = Section::findOrFail($id);
+        $section->delete();
+        return response()->json(['message' => 'Section deleted successfully.']);
     }
 }
