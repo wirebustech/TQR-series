@@ -1,0 +1,10 @@
+/* TQRS Custom Styles */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+#hero {
+  background: linear-gradient(90deg, #0d6efd 60%, #6610f2 100%);
+}
+footer a {
+  text-decoration: underline dotted;
+} 
