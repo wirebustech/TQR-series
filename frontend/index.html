@@ -21,6 +21,8 @@
           <li class="nav-item"><a class="nav-link" href="#research">Research</a></li>
           <li class="nav-item"><a class="nav-link" href="#webinars">Webinars</a></li>
           <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item" id="profileNav" style="display:none;"><a class="nav-link" href="#" id="profileBtn">Profile</a></li>
+          <li class="nav-item" id="contributeNav" style="display:none;"><a class="nav-link" href="#" id="contributeBtn">Submit Contribution</a></li>
           <li class="nav-item"><a class="nav-link" href="#login" id="loginBtn">Login</a></li>
         </ul>
       </div>
@@ -46,6 +48,76 @@
     </div>
   </section>
 
+  <!-- Webinars Section -->
+  <section class="py-5 bg-white" id="webinars">
+    <div class="container">
+      <h2 class="mb-4 text-center">Upcoming Webinars & Courses</h2>
+      <div class="row" id="webinarList">
+        <!-- Dynamic webinars will be loaded here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="py-5 bg-light" id="about">
+    <div class="container">
+      <h2 class="mb-4 text-center">About The Qualitative Research Series (TQRS)</h2>
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <p>Welcome to this foundational learning space! <span role="img" aria-label="handshake">🤝</span></p>
+          <p>This series is organised by Rising Scholars members and experts from diverse research and academic backgrounds. Our goal is to bridge gaps in learning and understanding and to simplify the use of qualitative data, methodologies, and analysis.</p>
+          <p>We hope to extend our reach, starting with students and early- to mid-career researchers in the Global South, who face challenges in their everyday research endeavours.</p>
+          <p>There will be free online sessions such as Webinars (Lectures plus Q&A), hands-on training, and interactive workshops.</p>
+          <ul>
+            <li>Designing and conducting qualitative research</li>
+            <li>Managing robust data</li>
+            <li>Applying different methodologies</li>
+            <li>Analyzing your data</li>
+            <li>Synthesising and triangulating results</li>
+            <li>Interpreting and reporting findings</li>
+          </ul>
+          <p class="fst-italic">Kindly note that topics may not be exhaustive.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="py-5" id="contact">
+    <div class="container">
+      <h2 class="mb-4 text-center">Contact Us</h2>
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <form id="contactForm" class="row g-3">
+            <div class="col-12">
+              <input type="text" class="form-control" id="contactName" placeholder="Your Name" required>
+            </div>
+            <div class="col-12">
+              <input type="email" class="form-control" id="contactEmail" placeholder="Your Email" required>
+            </div>
+            <div class="col-12">
+              <textarea class="form-control" id="contactMessage" rows="4" placeholder="Your Message" required></textarea>
+            </div>
+            <div class="col-12 d-grid">
+              <button type="submit" class="btn btn-primary">Send Message</button>
+            </div>
+          </form>
+          <div id="contactMsg" class="mt-3 text-center"></div>
+        </div>
+        <div class="col-md-4 mt-4 mt-md-0">
+          <h5>Contact Info</h5>
+          <p>Email: <a href="mailto:info@tqrs.org">info@tqrs.org</a></p>
+          <p>Office: Global South & Online</p>
+          <div>
+            <a href="#" class="me-2"><i class="bi bi-twitter"></i> Twitter</a>
+            <a href="#" class="me-2"><i class="bi bi-facebook"></i> Facebook</a>
+            <a href="#"><i class="bi bi-linkedin"></i> LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Newsletter Signup -->
   <section class="py-5 bg-light" id="newsletter">
     <div class="container">
@@ -65,6 +137,136 @@
       </div>
     </div>
   </section>
+
+  <!-- Login/Register Modal -->
+  <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="authModalLabel">Login to TQRS</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="loginForm">
+            <div class="mb-3">
+              <label for="loginEmail" class="form-label">Email address</label>
+              <input type="email" class="form-control" id="loginEmail" required>
+            </div>
+            <div class="mb-3">
+              <label for="loginPassword" class="form-label">Password</label>
+              <input type="password" class="form-control" id="loginPassword" required>
+            </div>
+            <div id="loginMsg" class="mb-2 text-danger"></div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+          </form>
+          <hr>
+          <div class="text-center">
+            <button class="btn btn-link" id="showRegister">Don't have an account? Register</button>
+          </div>
+          <form id="registerForm" style="display:none;">
+            <div class="mb-3">
+              <label for="registerName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="registerName" required>
+            </div>
+            <div class="mb-3">
+              <label for="registerEmail" class="form-label">Email address</label>
+              <input type="email" class="form-control" id="registerEmail" required>
+            </div>
+            <div class="mb-3">
+              <label for="registerPassword" class="form-label">Password</label>
+              <input type="password" class="form-control" id="registerPassword" required>
+            </div>
+            <div class="mb-3">
+              <label for="registerPassword2" class="form-label">Confirm Password</label>
+              <input type="password" class="form-control" id="registerPassword2" required>
+            </div>
+            <div id="registerMsg" class="mb-2 text-danger"></div>
+            <button type="submit" class="btn btn-success w-100">Register</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile/Dashboard Modal -->
+  <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="profileModalLabel">Your Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="profileInfo">
+            <!-- User info will be loaded here -->
+          </div>
+          <div id="userContributions" class="mt-4"></div>
+          <hr>
+          <button class="btn btn-outline-secondary w-100" id="logoutBtn2">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Blog Details Modal -->
+  <div class="modal fade" id="blogModal" tabindex="-1" aria-labelledby="blogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="blogModalLabel">Blog Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="blogModalBody">
+          <!-- Blog content will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Webinar Details Modal -->
+  <div class="modal fade" id="webinarModal" tabindex="-1" aria-labelledby="webinarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="webinarModalLabel">Webinar Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="webinarModalBody">
+          <!-- Webinar content will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contribution Modal -->
+  <div class="modal fade" id="contributionModal" tabindex="-1" aria-labelledby="contributionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="contributionModalLabel">Submit Research Contribution</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="contributionForm" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="contributionTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="contributionTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="contributionDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="contributionDescription" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="contributionFile" class="form-label">File (optional)</label>
+              <input type="file" class="form-control" id="contributionFile" accept=".pdf,.doc,.docx,.txt,.zip,.rar">
+            </div>
+            <div id="contributionMsg" class="mb-2 text-danger"></div>
+            <button type="submit" class="btn btn-primary w-100">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="py-4 bg-dark text-white text-center">
