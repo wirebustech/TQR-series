@@ -2,48 +2,44 @@
 session_start();
 
 $pageTitle = 'Webinars - TQRS';
-$pageDescription = 'Explore upcoming and past webinars on qualitative research methodologies. Register for live sessions and access recordings.';
+$pageDescription = 'Explore our collection of qualitative research webinars, workshops, and training sessions.';
 
 include_once __DIR__ . '/includes/header.php';
 
 $texts = [
-    'webinarsTitle' => 'Webinars',
-    'webinarsSubtitle' => 'Learn from experts in qualitative research',
+    'webinarsTitle' => 'Qualitative Research Webinars',
+    'webinarsSubtitle' => 'Learn from experts in qualitative research methodology, data analysis, and research design.',
     'upcomingWebinars' => 'Upcoming Webinars',
     'pastWebinars' => 'Past Webinars',
-    'liveNow' => 'Live Now',
-    'register' => 'Register',
-    'watchRecording' => 'Watch Recording',
-    'free' => 'Free',
-    'premium' => 'Premium',
+    'featuredWebinars' => 'Featured Webinars',
+    'allWebinars' => 'All Webinars',
     'filterBy' => 'Filter by',
     'category' => 'Category',
-    'date' => 'Date',
-    'price' => 'Price',
-    'searchWebinars' => 'Search webinars...',
     'allCategories' => 'All Categories',
-    'methodology' => 'Methodology',
-    'dataAnalysis' => 'Data Analysis',
-    'software' => 'Software',
-    'caseStudies' => 'Case Studies',
-    'theory' => 'Theory',
-    'allDates' => 'All Dates',
-    'thisWeek' => 'This Week',
-    'thisMonth' => 'This Month',
-    'nextMonth' => 'Next Month',
-    'allPrices' => 'All Prices',
-    'freeOnly' => 'Free Only',
-    'premiumOnly' => 'Premium Only',
-    'noWebinars' => 'No webinars found',
-    'noUpcoming' => 'No upcoming webinars at the moment',
-    'noPast' => 'No past webinars available',
+    'sortBy' => 'Sort by',
+    'date' => 'Date',
+    'title' => 'Title',
+    'popularity' => 'Popularity',
     'duration' => 'Duration',
-    'presenter' => 'Presenter',
-    'attendees' => 'Attendees',
-    'description' => 'Description',
-    'learnMore' => 'Learn More',
-    'calendarView' => 'Calendar View',
-    'listView' => 'List View'
+    'speaker' => 'Speaker',
+    'register' => 'Register',
+    'viewDetails' => 'View Details',
+    'watchNow' => 'Watch Now',
+    'free' => 'Free',
+    'paid' => 'Paid',
+    'noWebinars' => 'No webinars found',
+    'noWebinarsText' => 'Try adjusting your filters or check back later for new webinars.',
+    'loading' => 'Loading webinars...',
+    'error' => 'Error loading webinars',
+    'retry' => 'Retry',
+    'searchWebinars' => 'Search webinars...',
+    'clearFilters' => 'Clear Filters',
+    'webinarStats' => 'Webinar Statistics',
+    'totalWebinars' => 'Total Webinars',
+    'upcomingCount' => 'Upcoming',
+    'completedCount' => 'Completed',
+    'totalViews' => 'Total Views',
+    'totalRegistrations' => 'Total Registrations'
 ];
 if ($lang !== 'en') {
     foreach ($texts as $k => $v) {
@@ -51,349 +47,586 @@ if ($lang !== 'en') {
     }
 }
 
-// Mock data for webinars
-$upcomingWebinars = [
-    [
-        'id' => 1,
-        'title' => 'Advanced Grounded Theory Methodology',
-        'presenter' => 'Dr. Sarah Johnson',
-        'date' => '2024-02-15',
-        'time' => '14:00',
-        'duration' => '90',
-        'category' => 'methodology',
-        'price' => 'free',
-        'attendees' => 45,
-        'description' => 'Explore advanced techniques in grounded theory methodology for qualitative research.',
-        'image' => 'assets/images/webinar-1.jpg'
-    ],
-    [
-        'id' => 2,
-        'title' => 'NVivo Software Masterclass',
-        'presenter' => 'Dr. Michael Chen',
-        'date' => '2024-02-20',
-        'time' => '10:00',
-        'duration' => '120',
-        'category' => 'software',
-        'price' => 'premium',
-        'attendees' => 32,
-        'description' => 'Master NVivo software for qualitative data analysis with hands-on examples.',
-        'image' => 'assets/images/webinar-2.jpg'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Qualitative Data Analysis Techniques',
-        'presenter' => 'Dr. Emily Rodriguez',
-        'date' => '2024-02-25',
-        'time' => '16:00',
-        'duration' => '75',
-        'category' => 'dataAnalysis',
-        'price' => 'free',
-        'attendees' => 28,
-        'description' => 'Learn essential techniques for analyzing qualitative data effectively.',
-        'image' => 'assets/images/webinar-3.jpg'
-    ]
-];
+// Get filter parameters
+$category = $_GET['category'] ?? '';
+$sort = $_GET['sort'] ?? 'date';
+$search = $_GET['search'] ?? '';
+$page = max(1, intval($_GET['page'] ?? 1));
+$perPage = 12;
 
-$pastWebinars = [
-    [
-        'id' => 4,
-        'title' => 'Introduction to Phenomenology',
-        'presenter' => 'Dr. David Kim',
-        'date' => '2024-01-30',
-        'duration' => '90',
-        'category' => 'theory',
-        'price' => 'free',
-        'attendees' => 67,
-        'description' => 'Introduction to phenomenological research methods and applications.',
-        'image' => 'assets/images/webinar-4.jpg'
-    ],
-    [
-        'id' => 5,
-        'title' => 'Case Study Research Design',
-        'presenter' => 'Dr. Lisa Wang',
-        'date' => '2024-01-25',
-        'duration' => '105',
-        'category' => 'caseStudies',
-        'price' => 'premium',
-        'attendees' => 41,
-        'description' => 'Design and conduct effective case study research projects.',
-        'image' => 'assets/images/webinar-5.jpg'
-    ]
-];
+// Initialize data
+$webinars = [];
+$categories = [];
+$stats = [];
+$totalWebinars = 0;
+$totalPages = 1;
+$loading = true;
+$error = null;
+
+// Load data from API
+try {
+    // Load webinars
+    $apiUrl = 'http://localhost:8000/api/webinars?' . http_build_query([
+        'category' => $category,
+        'sort' => $sort,
+        'search' => $search,
+        'page' => $page,
+        'per_page' => $perPage
+    ]);
+    
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            'header' => 'Content-Type: application/json'
+        ]
+    ]);
+    
+    $response = file_get_contents($apiUrl, false, $context);
+    
+    if ($response !== false) {
+        $data = json_decode($response, true);
+        if ($data && isset($data['data'])) {
+            $webinars = $data['data'];
+            $totalWebinars = $data['total'] ?? count($webinars);
+            $totalPages = $data['last_page'] ?? 1;
+        }
+    }
+    
+    // Load categories
+    $categoriesUrl = 'http://localhost:8000/api/search/filters';
+    $categoriesResponse = file_get_contents($categoriesUrl, false, $context);
+    
+    if ($categoriesResponse !== false) {
+        $categoriesData = json_decode($categoriesResponse, true);
+        if ($categoriesData && isset($categoriesData['data']['categories']['webinars'])) {
+            $categories = $categoriesData['data']['categories']['webinars'];
+        }
+    }
+    
+    // Load stats
+    $statsUrl = 'http://localhost:8000/api/webinars/stats';
+    $statsResponse = file_get_contents($statsUrl, false, $context);
+    
+    if ($statsResponse !== false) {
+        $statsData = json_decode($statsResponse, true);
+        if ($statsData && isset($statsData['data'])) {
+            $stats = $statsData['data'];
+        }
+    }
+    
+    $loading = false;
+    
+} catch (Exception $e) {
+    $error = $e->getMessage();
+    $loading = false;
+    
+    // Fallback to mock data
+    $webinars = getMockWebinars();
+    $categories = getMockCategories();
+    $stats = getMockStats();
+}
+
+/**
+ * Get mock webinars for fallback
+ */
+function getMockWebinars() {
+    return [
+        [
+            'id' => 1,
+            'title' => 'Advanced Grounded Theory Methodology',
+            'description' => 'Explore advanced techniques in grounded theory methodology for qualitative research.',
+            'speaker_name' => 'Dr. Sarah Johnson',
+            'category' => 'methodology',
+            'duration' => '90 minutes',
+            'scheduled_at' => '2024-02-15T14:00:00Z',
+            'status' => 'scheduled',
+            'is_free' => false,
+            'price' => 49.99,
+            'image' => 'assets/images/webinar-1.jpg',
+            'views' => 1250,
+            'registrations' => 89
+        ],
+        [
+            'id' => 2,
+            'title' => 'NVivo Software Masterclass',
+            'description' => 'Master NVivo software for qualitative data analysis with hands-on examples.',
+            'speaker_name' => 'Dr. Michael Chen',
+            'category' => 'software',
+            'duration' => '120 minutes',
+            'scheduled_at' => '2024-02-20T15:00:00Z',
+            'status' => 'scheduled',
+            'is_free' => true,
+            'price' => 0,
+            'image' => 'assets/images/webinar-2.jpg',
+            'views' => 2100,
+            'registrations' => 156
+        ],
+        [
+            'id' => 3,
+            'title' => 'Conducting Effective Qualitative Interviews',
+            'description' => 'Learn the art of qualitative interviewing with practical tips and techniques.',
+            'speaker_name' => 'Dr. Emily Rodriguez',
+            'category' => 'interviews',
+            'duration' => '75 minutes',
+            'scheduled_at' => '2024-02-25T13:00:00Z',
+            'status' => 'scheduled',
+            'is_free' => false,
+            'price' => 29.99,
+            'image' => 'assets/images/webinar-3.jpg',
+            'views' => 890,
+            'registrations' => 67
+        ]
+    ];
+}
+
+/**
+ * Get mock categories for fallback
+ */
+function getMockCategories() {
+    return ['methodology', 'software', 'interviews', 'analysis', 'ethics', 'writing'];
+}
+
+/**
+ * Get mock stats for fallback
+ */
+function getMockStats() {
+    return [
+        'total_webinars' => 45,
+        'upcoming_webinars' => 12,
+        'completed_webinars' => 33,
+        'total_views' => 15600,
+        'total_registrations' => 2340
+    ];
+}
 ?>
 
-<!-- Hero Section -->
+<!-- Page Header -->
 <div class="bg-primary text-white py-5">
     <div class="container">
-        <div class="row justify-content-center text-center">
+        <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="display-4 fw-bold mb-3"><?= htmlspecialchars($texts['webinarsTitle']) ?></h1>
-                <p class="lead"><?= htmlspecialchars($texts['webinarsSubtitle']) ?></p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Filters -->
-<div class="py-4 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-3 mb-3">
-                <label for="categoryFilter" class="form-label"><?= htmlspecialchars($texts['category']) ?></label>
-                <select class="form-select" id="categoryFilter">
-                    <option value=""><?= htmlspecialchars($texts['allCategories']) ?></option>
-                    <option value="methodology"><?= htmlspecialchars($texts['methodology']) ?></option>
-                    <option value="dataAnalysis"><?= htmlspecialchars($texts['dataAnalysis']) ?></option>
-                    <option value="software"><?= htmlspecialchars($texts['software']) ?></option>
-                    <option value="caseStudies"><?= htmlspecialchars($texts['caseStudies']) ?></option>
-                    <option value="theory"><?= htmlspecialchars($texts['theory']) ?></option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="dateFilter" class="form-label"><?= htmlspecialchars($texts['date']) ?></label>
-                <select class="form-select" id="dateFilter">
-                    <option value=""><?= htmlspecialchars($texts['allDates']) ?></option>
-                    <option value="thisWeek"><?= htmlspecialchars($texts['thisWeek']) ?></option>
-                    <option value="thisMonth"><?= htmlspecialchars($texts['thisMonth']) ?></option>
-                    <option value="nextMonth"><?= htmlspecialchars($texts['nextMonth']) ?></option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="priceFilter" class="form-label"><?= htmlspecialchars($texts['price']) ?></label>
-                <select class="form-select" id="priceFilter">
-                    <option value=""><?= htmlspecialchars($texts['allPrices']) ?></option>
-                    <option value="free"><?= htmlspecialchars($texts['freeOnly']) ?></option>
-                    <option value="premium"><?= htmlspecialchars($texts['premiumOnly']) ?></option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="searchWebinars" class="form-label"><?= htmlspecialchars($texts['searchWebinars']) ?></label>
-                <input type="text" class="form-control" id="searchWebinars" placeholder="<?= htmlspecialchars($texts['searchWebinars']) ?>">
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Upcoming Webinars -->
-<div class="py-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold"><?= htmlspecialchars($texts['upcomingWebinars']) ?></h2>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary active" id="listViewBtn">
-                    <i class="bi bi-list"></i> <?= htmlspecialchars($texts['listView']) ?>
-                </button>
-                <button type="button" class="btn btn-outline-primary" id="calendarViewBtn">
-                    <i class="bi bi-calendar"></i> <?= htmlspecialchars($texts['calendarView']) ?>
-                </button>
-            </div>
-        </div>
-        
-        <div id="upcomingWebinarsList">
-            <?php if (empty($upcomingWebinars)): ?>
-                <div class="text-center py-5">
-                    <i class="bi bi-calendar-x fs-1 text-muted mb-3"></i>
-                    <h4 class="text-muted"><?= htmlspecialchars($texts['noUpcoming']) ?></h4>
-                    <p class="text-muted">Check back soon for new webinars!</p>
-                </div>
-            <?php else: ?>
-                <div class="row">
-                    <?php foreach ($upcomingWebinars as $webinar): ?>
-                        <div class="col-lg-4 col-md-6 mb-4 webinar-card" 
-                             data-category="<?= htmlspecialchars($webinar['category']) ?>"
-                             data-price="<?= htmlspecialchars($webinar['price']) ?>"
-                             data-date="<?= htmlspecialchars($webinar['date']) ?>">
-                            <div class="card h-100 border-0 shadow-sm">
-                                <img src="<?= htmlspecialchars($webinar['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($webinar['title']) ?>" style="height: 200px; object-fit: cover;">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <span class="badge bg-<?= $webinar['price'] === 'free' ? 'success' : 'warning' ?>">
-                                            <?= htmlspecialchars($texts[$webinar['price']]) ?>
-                                        </span>
-                                        <span class="badge bg-primary">
-                                            <?= htmlspecialchars($webinar['category']) ?>
-                                        </span>
-                                    </div>
-                                    <h5 class="card-title"><?= htmlspecialchars($webinar['title']) ?></h5>
-                                    <p class="card-text text-muted small">
-                                        <i class="bi bi-person"></i> <?= htmlspecialchars($webinar['presenter']) ?>
-                                    </p>
-                                    <p class="card-text text-muted small">
-                                        <i class="bi bi-calendar"></i> <?= date('M j, Y', strtotime($webinar['date'])) ?> at <?= htmlspecialchars($webinar['time']) ?>
-                                    </p>
-                                    <p class="card-text text-muted small">
-                                        <i class="bi bi-clock"></i> <?= htmlspecialchars($webinar['duration']) ?> minutes
-                                    </p>
-                                    <p class="card-text"><?= htmlspecialchars($webinar['description']) ?></p>
-                                </div>
-                                <div class="card-footer bg-transparent border-0">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="bi bi-people"></i> <?= htmlspecialchars($webinar['attendees']) ?> <?= htmlspecialchars($texts['attendees']) ?>
-                                        </small>
-                                        <a href="webinar-register.php?id=<?= $webinar['id'] ?>&lang=<?= urlencode($lang) ?>" class="btn btn-primary btn-sm">
-                                            <?= htmlspecialchars($texts['register']) ?>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
-
-<!-- Past Webinars -->
-<div class="bg-light py-5">
-    <div class="container">
-        <h2 class="fw-bold mb-4"><?= htmlspecialchars($texts['pastWebinars']) ?></h2>
-        
-        <?php if (empty($pastWebinars)): ?>
-            <div class="text-center py-5">
-                <i class="bi bi-archive fs-1 text-muted mb-3"></i>
-                <h4 class="text-muted"><?= htmlspecialchars($texts['noPast']) ?></h4>
-                <p class="text-muted">No past webinars available at the moment.</p>
-            </div>
-        <?php else: ?>
-            <div class="row">
-                <?php foreach ($pastWebinars as $webinar): ?>
-                    <div class="col-lg-4 col-md-6 mb-4 webinar-card" 
-                         data-category="<?= htmlspecialchars($webinar['category']) ?>"
-                         data-price="<?= htmlspecialchars($webinar['price']) ?>"
-                         data-date="<?= htmlspecialchars($webinar['date']) ?>">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <img src="<?= htmlspecialchars($webinar['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($webinar['title']) ?>" style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge bg-<?= $webinar['price'] === 'free' ? 'success' : 'warning' ?>">
-                                        <?= htmlspecialchars($texts[$webinar['price']]) ?>
-                                    </span>
-                                    <span class="badge bg-secondary">
-                                        <?= htmlspecialchars($texts['pastWebinars']) ?>
-                                    </span>
-                                </div>
-                                <h5 class="card-title"><?= htmlspecialchars($webinar['title']) ?></h5>
-                                <p class="card-text text-muted small">
-                                    <i class="bi bi-person"></i> <?= htmlspecialchars($webinar['presenter']) ?>
-                                </p>
-                                <p class="card-text text-muted small">
-                                    <i class="bi bi-calendar"></i> <?= date('M j, Y', strtotime($webinar['date'])) ?>
-                                </p>
-                                <p class="card-text text-muted small">
-                                    <i class="bi bi-clock"></i> <?= htmlspecialchars($webinar['duration']) ?> minutes
-                                </p>
-                                <p class="card-text"><?= htmlspecialchars($webinar['description']) ?></p>
-                            </div>
-                            <div class="card-footer bg-transparent border-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="bi bi-people"></i> <?= htmlspecialchars($webinar['attendees']) ?> <?= htmlspecialchars($texts['attendees']) ?>
-                                    </small>
-                                    <a href="webinar-recording.php?id=<?= $webinar['id'] ?>&lang=<?= urlencode($lang) ?>" class="btn btn-outline-primary btn-sm">
-                                        <?= htmlspecialchars($texts['watchRecording']) ?>
-                                    </a>
-                                </div>
-                            </div>
+                <h1 class="display-5 fw-bold mb-3"><?= htmlspecialchars($texts['webinarsTitle']) ?></h1>
+                <p class="lead mb-4"><?= htmlspecialchars($texts['webinarsSubtitle']) ?></p>
+                
+                <!-- Search Bar -->
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-0" id="searchInput" 
+                                   placeholder="<?= htmlspecialchars($texts['searchWebinars']) ?>" 
+                                   value="<?= htmlspecialchars($search) ?>">
                         </div>
                     </div>
-                <?php endforeach; ?>
+                    <div class="col-md-4">
+                        <button class="btn btn-light w-100" onclick="performSearch()">
+                            <i class="bi bi-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
             </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<!-- Call to Action -->
-<div class="py-5">
-    <div class="container">
-        <div class="row justify-content-center text-center">
-            <div class="col-lg-8">
-                <h2 class="fw-bold mb-4">Stay Updated</h2>
-                <p class="lead mb-4">Get notified about upcoming webinars and research opportunities.</p>
-                <div class="d-flex gap-3 justify-content-center">
-                    <a href="newsletter.php?lang=<?= urlencode($lang) ?>" class="btn btn-primary btn-lg">
-                        <i class="bi bi-envelope"></i> Subscribe to Newsletter
-                    </a>
-                    <a href="calendar.php?lang=<?= urlencode($lang) ?>" class="btn btn-outline-primary btn-lg">
-                        <i class="bi bi-calendar"></i> View Calendar
-                    </a>
+            <div class="col-lg-4 text-lg-end">
+                <!-- Webinar Stats -->
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-10 rounded p-3">
+                            <h4 class="mb-1"><?= $stats['total_webinars'] ?? 0 ?></h4>
+                            <small><?= htmlspecialchars($texts['totalWebinars']) ?></small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-10 rounded p-3">
+                            <h4 class="mb-1"><?= $stats['upcoming_webinars'] ?? 0 ?></h4>
+                            <small><?= htmlspecialchars($texts['upcomingCount']) ?></small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="bg-white bg-opacity-10 rounded p-3">
+                            <h4 class="mb-1"><?= $stats['total_views'] ?? 0 ?></h4>
+                            <small><?= htmlspecialchars($texts['totalViews']) ?></small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Filters and Content -->
+<div class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Filters Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0">
+                            <i class="bi bi-funnel me-2"></i><?= htmlspecialchars($texts['filterBy']) ?>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Category Filter -->
+                        <div class="mb-4">
+                            <label class="form-label"><?= htmlspecialchars($texts['category']) ?></label>
+                            <select class="form-select" id="categoryFilter">
+                                <option value=""><?= htmlspecialchars($texts['allCategories']) ?></option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat) ?>" <?= $category === $cat ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars(ucfirst($cat)) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div class="mb-4">
+                            <label class="form-label"><?= htmlspecialchars($texts['sortBy']) ?></label>
+                            <select class="form-select" id="sortFilter">
+                                <option value="date" <?= $sort === 'date' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['date']) ?>
+                                </option>
+                                <option value="title" <?= $sort === 'title' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['title']) ?>
+                                </option>
+                                <option value="popularity" <?= $sort === 'popularity' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['popularity']) ?>
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters -->
+                        <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                            <i class="bi bi-x-circle me-2"></i><?= htmlspecialchars($texts['clearFilters']) ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Webinars Content -->
+            <div class="col-lg-9">
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center py-5" style="display: <?= $loading ? 'block' : 'none' ?>;">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted"><?= htmlspecialchars($texts['loading']) ?></p>
+                </div>
+
+                <!-- Error State -->
+                <div id="errorState" class="text-center py-5" style="display: <?= $error ? 'block' : 'none' ?>;">
+                    <i class="bi bi-exclamation-triangle display-1 text-warning mb-3"></i>
+                    <h4><?= htmlspecialchars($texts['error']) ?></h4>
+                    <p class="text-muted mb-4"><?= htmlspecialchars($error) ?></p>
+                    <button class="btn btn-primary" onclick="retryLoading()">
+                        <i class="bi bi-arrow-clockwise me-2"></i><?= htmlspecialchars($texts['retry']) ?>
+                    </button>
+                </div>
+
+                <!-- Webinars Grid -->
+                <div id="webinarsGrid" style="display: <?= !$loading && !$error ? 'block' : 'none' ?>;">
+                    <?php if (empty($webinars)): ?>
+                        <!-- No Results -->
+                        <div class="text-center py-5">
+                            <i class="bi bi-camera-video-off display-1 text-muted mb-4"></i>
+                            <h3><?= htmlspecialchars($texts['noWebinars']) ?></h3>
+                            <p class="text-muted"><?= htmlspecialchars($texts['noWebinarsText']) ?></p>
+                        </div>
+                    <?php else: ?>
+                        <!-- Webinars List -->
+                        <div class="row">
+                            <?php foreach ($webinars as $webinar): ?>
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <div class="card h-100 border-0 shadow-sm webinar-card">
+                                        <!-- Webinar Image -->
+                                        <div class="position-relative">
+                                            <img src="<?= htmlspecialchars($webinar['image'] ?? 'assets/images/webinar-default.jpg') ?>" 
+                                                 class="card-img-top" alt="<?= htmlspecialchars($webinar['title']) ?>"
+                                                 style="height: 200px; object-fit: cover;">
+                                            
+                                            <!-- Status Badge -->
+                                            <div class="position-absolute top-0 start-0 m-2">
+                                                <?php if ($webinar['is_free'] ?? false): ?>
+                                                    <span class="badge bg-success"><?= htmlspecialchars($texts['free']) ?></span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-warning"><?= htmlspecialchars($texts['paid']) ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                            
+                                            <!-- Category Badge -->
+                                            <div class="position-absolute top-0 end-0 m-2">
+                                                <span class="badge bg-primary"><?= htmlspecialchars(ucfirst($webinar['category'] ?? 'general')) ?></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-body d-flex flex-column">
+                                            <!-- Title and Description -->
+                                            <h5 class="card-title mb-2"><?= htmlspecialchars($webinar['title']) ?></h5>
+                                            <p class="card-text text-muted flex-grow-1">
+                                                <?= htmlspecialchars(truncateText($webinar['description'] ?? '', 100)) ?>
+                                            </p>
+                                            
+                                            <!-- Speaker -->
+                                            <p class="text-muted small mb-2">
+                                                <i class="bi bi-person me-1"></i>
+                                                <?= htmlspecialchars($webinar['speaker_name'] ?? 'Unknown Speaker') ?>
+                                            </p>
+                                            
+                                            <!-- Webinar Details -->
+                                            <div class="row text-muted small mb-3">
+                                                <div class="col-6">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    <?= htmlspecialchars($webinar['duration'] ?? 'N/A') ?>
+                                                </div>
+                                                <div class="col-6">
+                                                    <i class="bi bi-calendar me-1"></i>
+                                                    <?= formatDate($webinar['scheduled_at'] ?? '') ?>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Stats -->
+                                            <div class="row text-muted small mb-3">
+                                                <div class="col-6">
+                                                    <i class="bi bi-eye me-1"></i>
+                                                    <?= number_format($webinar['views'] ?? 0) ?> views
+                                                </div>
+                                                <div class="col-6">
+                                                    <i class="bi bi-people me-1"></i>
+                                                    <?= number_format($webinar['registrations'] ?? 0) ?> registered
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Action Buttons -->
+                                            <div class="mt-auto">
+                                                <?php if (($webinar['is_free'] ?? false) || isset($_SESSION['user_id'])): ?>
+                                                    <a href="webinar-details.php?id=<?= $webinar['id'] ?>&lang=<?= urlencode($lang) ?>" 
+                                                       class="btn btn-primary w-100">
+                                                        <?= htmlspecialchars($texts['viewDetails']) ?>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <div class="d-flex gap-2">
+                                                        <a href="webinar-details.php?id=<?= $webinar['id'] ?>&lang=<?= urlencode($lang) ?>" 
+                                                           class="btn btn-outline-primary flex-grow-1">
+                                                            <?= htmlspecialchars($texts['viewDetails']) ?>
+                                                        </a>
+                                                        <button class="btn btn-primary" onclick="registerWebinar(<?= $webinar['id'] ?>)">
+                                                            <?= htmlspecialchars($texts['register']) ?>
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Pagination -->
+                        <?php if ($totalPages > 1): ?>
+                        <nav aria-label="Webinars pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                <?php if ($page > 1): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="<?= buildWebinarsUrl($category, $sort, $search, $page - 1) ?>">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                
+                                <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
+                                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                                        <a class="page-link" href="<?= buildWebinarsUrl($category, $sort, $search, $i) ?>">
+                                            <?= $i ?>
+                                        </a>
+                                    </li>
+                                <?php endfor; ?>
+                                
+                                <?php if ($page < $totalPages): ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="<?= buildWebinarsUrl($category, $sort, $search, $page + 1) ?>">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </nav>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Registration Modal -->
+<div class="modal fade" id="registrationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Register for Webinar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>You need to be logged in to register for this webinar.</p>
+                <p>Please <a href="login.php?lang=<?= urlencode($lang) ?>">log in</a> or <a href="register.php?lang=<?= urlencode($lang) ?>">create an account</a> to continue.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="login.php?lang=<?= urlencode($lang) ?>" class="btn btn-primary">Log In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="assets/js/api.js"></script>
 <script>
-// Filter functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const categoryFilter = document.getElementById('categoryFilter');
-    const dateFilter = document.getElementById('dateFilter');
-    const priceFilter = document.getElementById('priceFilter');
-    const searchInput = document.getElementById('searchWebinars');
-    const webinarCards = document.querySelectorAll('.webinar-card');
+    let currentWebinarId = null;
 
-    function filterWebinars() {
-        const category = categoryFilter.value;
-        const date = dateFilter.value;
-        const price = priceFilter.value;
-        const search = searchInput.value.toLowerCase();
-
-        webinarCards.forEach(card => {
-            let show = true;
-
-            // Category filter
-            if (category && card.dataset.category !== category) {
-                show = false;
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up filter change handlers
+        document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+        document.getElementById('sortFilter').addEventListener('change', applyFilters);
+        
+        // Set up search input handler
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
             }
-
-            // Price filter
-            if (price && card.dataset.price !== price) {
-                show = false;
-            }
-
-            // Search filter
-            if (search) {
-                const title = card.querySelector('.card-title').textContent.toLowerCase();
-                const description = card.querySelector('.card-text').textContent.toLowerCase();
-                if (!title.includes(search) && !description.includes(search)) {
-                    show = false;
-                }
-            }
-
-            // Date filter (simplified)
-            if (date) {
-                const cardDate = new Date(card.dataset.date);
-                const now = new Date();
-                
-                if (date === 'thisWeek') {
-                    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-                    if (cardDate > weekFromNow || cardDate < now) {
-                        show = false;
-                    }
-                } else if (date === 'thisMonth') {
-                    const monthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-                    if (cardDate > monthFromNow || cardDate < now) {
-                        show = false;
-                    }
-                } else if (date === 'nextMonth') {
-                    const monthFromNow = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-                    const twoMonthsFromNow = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate());
-                    if (cardDate < monthFromNow || cardDate > twoMonthsFromNow) {
-                        show = false;
-                    }
-                }
-            }
-
-            card.style.display = show ? 'block' : 'none';
         });
+    });
+
+    function applyFilters() {
+        const category = document.getElementById('categoryFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+        const search = document.getElementById('searchInput').value;
+        
+        const url = buildWebinarsUrl(category, sort, search, 1);
+        window.location.href = url;
     }
 
-    categoryFilter.addEventListener('change', filterWebinars);
-    dateFilter.addEventListener('change', filterWebinars);
-    priceFilter.addEventListener('change', filterWebinars);
-    searchInput.addEventListener('input', filterWebinars);
-});
+    function performSearch() {
+        const search = document.getElementById('searchInput').value;
+        const category = document.getElementById('categoryFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+        
+        const url = buildWebinarsUrl(category, sort, search, 1);
+        window.location.href = url;
+    }
+
+    function clearFilters() {
+        const url = buildWebinarsUrl('', 'date', '', 1);
+        window.location.href = url;
+    }
+
+    function registerWebinar(webinarId) {
+        currentWebinarId = webinarId;
+        
+        // Check if user is logged in
+        if (typeof api !== 'undefined' && api.isAuthenticated()) {
+            // User is logged in, proceed with registration
+            window.location.href = `webinar-details.php?id=${webinarId}&lang=<?= urlencode($lang) ?>`;
+        } else {
+            // Show login modal
+            const modal = new bootstrap.Modal(document.getElementById('registrationModal'));
+            modal.show();
+        }
+    }
+
+    function retryLoading() {
+        window.location.reload();
+    }
+
+    function buildWebinarsUrl(category, sort, search, page) {
+        const params = new URLSearchParams();
+        
+        if (category) params.set('category', category);
+        if (sort) params.set('sort', sort);
+        if (search) params.set('search', search);
+        if (page > 1) params.set('page', page);
+        params.set('lang', '<?= urlencode($lang) ?>');
+        
+        return 'webinars.php?' + params.toString();
+    }
+
+    function truncateText(text, maxLength) {
+        if (text.length <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength) + '...';
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'TBD';
+        
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+            return 'Today';
+        } else if (diffDays === 1) {
+            return 'Tomorrow';
+        } else if (diffDays <= 7) {
+            return `In ${diffDays} days`;
+        } else {
+            return date.toLocaleDateString();
+        }
+    }
 </script>
+
+<?php
+/**
+ * Build webinars URL with parameters
+ */
+function buildWebinarsUrl($category, $sort, $search, $page = 1) {
+    $params = [
+        'lang' => $GLOBALS['lang']
+    ];
+    
+    if ($category) $params['category'] = $category;
+    if ($sort) $params['sort'] = $sort;
+    if ($search) $params['search'] = $search;
+    if ($page > 1) $params['page'] = $page;
+    
+    return 'webinars.php?' . http_build_query($params);
+}
+
+/**
+ * Truncate text to specified length
+ */
+function truncateText($text, $maxLength) {
+    if (strlen($text) <= $maxLength) {
+        return $text;
+    }
+    return substr($text, 0, $maxLength) . '...';
+}
+
+/**
+ * Format date for display
+ */
+function formatDate($dateString) {
+    if (empty($dateString)) {
+        return 'TBD';
+    }
+    
+    $date = new DateTime($dateString);
+    $now = new DateTime();
+    $diff = $date->diff($now);
+    
+    if ($diff->days === 0) {
+        return 'Today';
+    } elseif ($diff->days === 1) {
+        return 'Tomorrow';
+    } elseif ($diff->days <= 7) {
+        return 'In ' . $diff->days . ' days';
+    } else {
+        return $date->format('M j, Y');
+    }
+}
+?>
 
 <?php include_once __DIR__ . '/includes/footer.php'; ?> 

@@ -3,6 +3,9 @@
  * Common functionality for the frontend
  */
 
+// Import API client
+// Note: Make sure api.js is loaded before main.js in your HTML
+
 // Global variables
 let currentLang = 'en';
 let isOnline = navigator.onLine;
@@ -26,6 +29,7 @@ function initializeApp() {
     initializePWA();
     initializeOfflineDetection();
     initializeAnimations();
+    initializeDashboard();
     
     // Set up event listeners
     setupEventListeners();
@@ -63,33 +67,77 @@ function initializeSearch() {
         });
         
         // Add search suggestions
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', debounce(function() {
             const query = this.value.trim();
             if (query.length > 2) {
                 showSearchSuggestions(query);
             } else {
                 hideSearchSuggestions();
             }
-        });
+        }, 300));
     }
 }
 
 /**
- * Perform search
+ * Perform search using API
  */
-function performSearch(query) {
-    const searchUrl = `search.php?q=${encodeURIComponent(query)}&lang=${currentLang}`;
-    window.location.href = searchUrl;
+async function performSearch(query) {
+    try {
+        // Track search query
+        await api.trackSearch(query);
+        
+        // Redirect to search results page
+        const searchUrl = `search.php?q=${encodeURIComponent(query)}&lang=${currentLang}`;
+        window.location.href = searchUrl;
+    } catch (error) {
+        console.error('Search error:', error);
+        // Fallback to direct search
+        const searchUrl = `search.php?q=${encodeURIComponent(query)}&lang=${currentLang}`;
+        window.location.href = searchUrl;
+    }
 }
 
 /**
- * Show search suggestions
+ * Show search suggestions using API
  */
-function showSearchSuggestions(query) {
+async function showSearchSuggestions(query) {
     // Remove existing suggestions
     hideSearchSuggestions();
     
-    // Create suggestions container
+    try {
+        // Get search filters which include suggestions
+        const response = await api.getSearchFilters();
+        const suggestions = response.data.popular_tags || [];
+        
+        // Filter suggestions based on query
+        const filteredSuggestions = suggestions.filter(s => 
+            s.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+        
+        if (filteredSuggestions.length > 0) {
+            createSuggestionsContainer(filteredSuggestions);
+        }
+    } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        // Fallback to static suggestions
+        const fallbackSuggestions = [
+            'Qualitative research methods',
+            'Grounded theory',
+            'Phenomenology',
+            'Case study research',
+            'Interview techniques'
+        ].filter(s => s.toLowerCase().includes(query.toLowerCase()));
+        
+        if (fallbackSuggestions.length > 0) {
+            createSuggestionsContainer(fallbackSuggestions);
+        }
+    }
+}
+
+/**
+ * Create suggestions container
+ */
+function createSuggestionsContainer(suggestions) {
     const suggestionsContainer = document.createElement('div');
     suggestionsContainer.className = 'search-suggestions';
     suggestionsContainer.style.cssText = `
@@ -106,16 +154,6 @@ function showSearchSuggestions(query) {
         max-height: 200px;
         overflow-y: auto;
     `;
-    
-    // Mock suggestions - in real app, this would come from API
-    const suggestions = [
-        'Qualitative research methods',
-        'Grounded theory',
-        'Phenomenology',
-        'Case study research',
-        'Interview techniques',
-        'Data analysis software'
-    ].filter(s => s.toLowerCase().includes(query.toLowerCase()));
     
     suggestions.forEach(suggestion => {
         const suggestionItem = document.createElement('div');
@@ -154,6 +192,177 @@ function hideSearchSuggestions() {
     if (existingSuggestions) {
         existingSuggestions.remove();
     }
+}
+
+/**
+ * Initialize dashboard functionality
+ */
+function initializeDashboard() {
+    // Only initialize if we're on a dashboard page
+    if (document.querySelector('.dashboard-container')) {
+        loadDashboardData();
+    }
+}
+
+/**
+ * Load dashboard data from API
+ */
+async function loadDashboardData() {
+    try {
+        const response = await api.getDashboard();
+        if (response.success) {
+            updateDashboardUI(response.data);
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        api.handleError(error);
+    }
+}
+
+/**
+ * Update dashboard UI with data
+ */
+function updateDashboardUI(data) {
+    // Update user stats
+    if (data.stats) {
+        updateUserStats(data.stats);
+    }
+    
+    // Update recent activity
+    if (data.recent_activity) {
+        updateRecentActivity(data.recent_activity);
+    }
+    
+    // Update upcoming webinars
+    if (data.upcoming_webinars) {
+        updateUpcomingWebinars(data.upcoming_webinars);
+    }
+    
+    // Update recommendations
+    if (data.recommendations) {
+        updateRecommendations(data.recommendations);
+    }
+    
+    // Update notifications
+    if (data.notifications) {
+        updateNotifications(data.notifications);
+    }
+}
+
+/**
+ * Update user statistics
+ */
+function updateUserStats(stats) {
+    const statsContainer = document.querySelector('.user-stats');
+    if (!statsContainer) return;
+    
+    statsContainer.innerHTML = `
+        <div class="row text-center">
+            <div class="col-4">
+                <div class="bg-primary bg-opacity-10 rounded p-2">
+                    <h6 class="text-primary mb-0">${stats.webinars_watched || 0}</h6>
+                    <small class="text-muted">Webinars</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="bg-success bg-opacity-10 rounded p-2">
+                    <h6 class="text-success mb-0">${stats.blogs_read || 0}</h6>
+                    <small class="text-muted">Articles</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="bg-warning bg-opacity-10 rounded p-2">
+                    <h6 class="text-warning mb-0">${stats.contributions_made || 0}</h6>
+                    <small class="text-muted">Contributions</small>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Update recent activity
+ */
+function updateRecentActivity(activities) {
+    const activityContainer = document.querySelector('.recent-activity');
+    if (!activityContainer) return;
+    
+    const activityHTML = activities.map(activity => `
+        <div class="timeline-item">
+            <div class="timeline-marker bg-primary"></div>
+            <div class="timeline-content">
+                <h6 class="mb-1">${activity.title}</h6>
+                <p class="text-muted mb-1">${activity.description || ''}</p>
+                <small class="text-muted">${formatDate(activity.date)}</small>
+            </div>
+        </div>
+    `).join('');
+    
+    activityContainer.innerHTML = activityHTML;
+}
+
+/**
+ * Update upcoming webinars
+ */
+function updateUpcomingWebinars(webinars) {
+    const webinarsContainer = document.querySelector('.upcoming-webinars');
+    if (!webinarsContainer) return;
+    
+    const webinarsHTML = webinars.map(webinar => `
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">${webinar.title}</h6>
+                <p class="card-text small text-muted">${webinar.description}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">${formatDate(webinar.scheduled_at)}</small>
+                    <a href="${webinar.registration_url}" class="btn btn-sm btn-primary">
+                        ${webinar.is_registered ? 'View' : 'Register'}
+                    </a>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    webinarsContainer.innerHTML = webinarsHTML;
+}
+
+/**
+ * Update recommendations
+ */
+function updateRecommendations(recommendations) {
+    const recommendationsContainer = document.querySelector('.recommendations');
+    if (!recommendationsContainer) return;
+    
+    const recommendationsHTML = recommendations.map(rec => `
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">${rec.title}</h6>
+                <p class="card-text small">${rec.description}</p>
+                <small class="text-muted">${rec.reason}</small>
+                <a href="${rec.url}" class="btn btn-sm btn-outline-primary mt-2">View</a>
+            </div>
+        </div>
+    `).join('');
+    
+    recommendationsContainer.innerHTML = recommendationsHTML;
+}
+
+/**
+ * Update notifications
+ */
+function updateNotifications(notifications) {
+    const notificationsContainer = document.querySelector('.notifications');
+    if (!notificationsContainer) return;
+    
+    const notificationsHTML = notifications.map(notification => `
+        <div class="alert alert-info alert-dismissible fade show">
+            <strong>${notification.title}</strong>
+            <p class="mb-0">${notification.message}</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `).join('');
+    
+    notificationsContainer.innerHTML = notificationsHTML;
 }
 
 /**
@@ -199,72 +408,63 @@ function showToast(title, message) {
     const existingToasts = document.querySelectorAll('.toast-notification');
     existingToasts.forEach(toast => toast.remove());
     
-    // Create toast
+    // Create new toast
     const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        padding: 1rem;
-        border-radius: 0.375rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        z-index: 9999;
-        max-width: 300px;
-        animation: slideIn 0.3s ease-out;
-    `;
-    
+    toast.className = 'toast-notification position-fixed top-0 end-0 p-3';
+    toast.style.zIndex = '9999';
     toast.innerHTML = `
-        <h6 class="mb-1">${title}</h6>
-        <p class="mb-0 small">${message}</p>
+        <div class="toast show" role="alert">
+            <div class="toast-header">
+                <strong class="me-auto">${title}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
     `;
     
     document.body.appendChild(toast);
     
     // Auto remove after 5 seconds
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-in';
-        setTimeout(() => toast.remove(), 300);
+        toast.remove();
     }, 5000);
 }
 
 /**
- * Initialize PWA features
+ * Initialize PWA functionality
  */
 function initializePWA() {
-    // Handle beforeinstallprompt event
+    // Listen for beforeinstallprompt event
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
         showInstallPrompt();
     });
     
-    // Handle app installed event
-    window.addEventListener('appinstalled', (evt) => {
-        console.log('App was installed');
+    // Listen for app installed event
+    window.addEventListener('appinstalled', () => {
         hideInstallPrompt();
+        console.log('PWA was installed');
     });
 }
 
 /**
- * Show PWA install prompt
+ * Show install prompt
  */
 function showInstallPrompt() {
-    const prompt = document.getElementById('pwaInstallPrompt');
-    if (prompt) {
-        prompt.style.display = 'block';
+    const installPrompt = document.getElementById('installPrompt');
+    if (installPrompt) {
+        installPrompt.style.display = 'block';
     }
 }
 
 /**
- * Hide PWA install prompt
+ * Hide install prompt
  */
 function hideInstallPrompt() {
-    const prompt = document.getElementById('pwaInstallPrompt');
-    if (prompt) {
-        prompt.style.display = 'none';
+    const installPrompt = document.getElementById('installPrompt');
+    if (installPrompt) {
+        installPrompt.style.display = 'none';
     }
 }
 
@@ -281,7 +481,6 @@ function installPWA() {
                 console.log('User dismissed the install prompt');
             }
             deferredPrompt = null;
-            hideInstallPrompt();
         });
     }
 }
@@ -290,16 +489,14 @@ function installPWA() {
  * Initialize offline detection
  */
 function initializeOfflineDetection() {
-    window.addEventListener('online', function() {
+    window.addEventListener('online', () => {
         isOnline = true;
-        showNotification('Connection Restored', 'You are back online!');
-        document.body.classList.remove('offline');
+        showToast('Connection Restored', 'You are back online!');
     });
     
-    window.addEventListener('offline', function() {
+    window.addEventListener('offline', () => {
         isOnline = false;
-        showNotification('Connection Lost', 'You are currently offline. Some features may be limited.');
-        document.body.classList.add('offline');
+        showToast('Connection Lost', 'You are currently offline. Some features may not work.');
     });
 }
 
@@ -308,22 +505,23 @@ function initializeOfflineDetection() {
  */
 function initializeAnimations() {
     // Intersection Observer for scroll animations
-    if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
-                }
-            });
-        }, {
-            threshold: 0.1
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
         });
-        
-        // Observe elements with animation classes
-        document.querySelectorAll('.animate-on-scroll').forEach(el => {
-            observer.observe(el);
-        });
-    }
+    }, observerOptions);
+    
+    // Observe elements with animation classes
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
 }
 
 /**
@@ -331,9 +529,9 @@ function initializeAnimations() {
  */
 function setupEventListeners() {
     // Language switcher
-    const langSelect = document.querySelector('select[name="lang"]');
-    if (langSelect) {
-        langSelect.addEventListener('change', function() {
+    const langSwitcher = document.querySelector('.lang-switcher select');
+    if (langSwitcher) {
+        langSwitcher.addEventListener('change', function() {
             const newLang = this.value;
             const currentUrl = new URL(window.location);
             currentUrl.searchParams.set('lang', newLang);
@@ -341,91 +539,89 @@ function setupEventListeners() {
         });
     }
     
-    // Back to top button
-    const backToTopBtn = document.getElementById('backToTop');
-    if (backToTopBtn) {
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTopBtn.style.display = 'block';
-            } else {
-                backToTopBtn.style.display = 'none';
-            }
-        });
-        
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
+    // Install PWA button
+    const installBtn = document.getElementById('installPWA');
+    if (installBtn) {
+        installBtn.addEventListener('click', installPWA);
     }
     
-    // Newsletter signup
-    const newsletterForm = document.querySelector('form[action*="newsletter"]');
+    // Newsletter subscription
+    const newsletterForm = document.querySelector('.newsletter-form');
     if (newsletterForm) {
         newsletterForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const email = this.querySelector('input[type="email"]').value;
-            if (email) {
-                subscribeToNewsletter(email);
+            subscribeToNewsletter(email);
+        });
+    }
+    
+    // Password toggle
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
             }
         });
+    });
+}
+
+/**
+ * Subscribe to newsletter using API
+ */
+async function subscribeToNewsletter(email) {
+    try {
+        const response = await api.subscribeNewsletter(email);
+        if (response.success) {
+            showToast('Success', 'Thank you for subscribing to our newsletter!');
+        } else {
+            showToast('Error', response.message || 'Failed to subscribe');
+        }
+    } catch (error) {
+        console.error('Newsletter subscription error:', error);
+        showToast('Error', 'Failed to subscribe. Please try again.');
     }
 }
 
 /**
- * Subscribe to newsletter
- */
-function subscribeToNewsletter(email) {
-    // In a real app, this would make an API call
-    fetch('/api/newsletter/subscribe', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: email })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('Success', 'You have been subscribed to our newsletter!');
-        } else {
-            showToast('Error', 'Failed to subscribe. Please try again.');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Error', 'Failed to subscribe. Please try again.');
-    });
-}
-
-/**
- * Utility function to format dates
+ * Format date for display
  */
 function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString(currentLang, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) {
+        return 'Today';
+    } else if (diffDays === 2) {
+        return 'Yesterday';
+    } else if (diffDays <= 7) {
+        return `${diffDays - 1} days ago`;
+    } else {
+        return date.toLocaleDateString();
+    }
 }
 
 /**
- * Utility function to format time
+ * Format time for display
  */
 function formatTime(timeString) {
-    const [hours, minutes] = timeString.split(':');
-    const date = new Date();
-    date.setHours(hours, minutes);
-    return date.toLocaleTimeString(currentLang, {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const date = new Date(timeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 /**
- * Utility function to truncate text
+ * Truncate text to specified length
  */
 function truncateText(text, maxLength) {
     if (text.length <= maxLength) {
@@ -435,7 +631,7 @@ function truncateText(text, maxLength) {
 }
 
 /**
- * Utility function to debounce
+ * Debounce function
  */
 function debounce(func, wait) {
     let timeout;

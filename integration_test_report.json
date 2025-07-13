@@ -1,0 +1,395 @@
+{
+    "timestamp": "2025-07-13 13:02:42",
+    "summary": {
+        "total_tests": 71,
+        "passed_tests": 18,
+        "failed_tests": 53,
+        "success_rate": 25.352112676056336
+    },
+    "detailed_results": {
+        "backend_health": {
+            "\/api\/health": {
+                "description": "Health Check",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/version": {
+                "description": "Version Info",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/status": {
+                "description": "System Status",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "auth": {
+            "register": {
+                "status": "FAIL",
+                "response": false
+            },
+            "login": {
+                "status": "FAIL",
+                "response": false
+            },
+            "logout": {
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "user_management": {
+            "\/api\/users": {
+                "description": "List Users",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/users\/profile": {
+                "description": "User Profile",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/users\/settings": {
+                "description": "User Settings",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/users\/activity": {
+                "description": "User Activity",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "content_management": {
+            "\/api\/articles": {
+                "description": "Articles",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/blogs": {
+                "description": "Blogs",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/pages": {
+                "description": "Pages",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/media": {
+                "description": "Media",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/categories": {
+                "description": "Categories",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "webinar_system": {
+            "\/api\/webinars": {
+                "description": "Webinars List",
+                "status": "PASS",
+                "response": true
+            },
+            "\/api\/webinars\/upcoming": {
+                "description": "Upcoming Webinars",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/webinars\/past": {
+                "description": "Past Webinars",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/webinars\/stats": {
+                "description": "Webinar Stats",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/webinars\/register": {
+                "description": "Webinar Registration",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "payment_system": {
+            "\/api\/payments\/methods": {
+                "description": "Payment Methods",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/payments\/history": {
+                "description": "Payment History",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/payments\/webhook": {
+                "description": "Payment Webhook",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/subscriptions": {
+                "description": "Subscriptions",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "analytics_system": {
+            "\/api\/analytics\/overview": {
+                "description": "Analytics Overview",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/analytics\/users": {
+                "description": "User Analytics",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/analytics\/content": {
+                "description": "Content Analytics",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/analytics\/revenue": {
+                "description": "Revenue Analytics",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "search_system": {
+            "\/api\/search": {
+                "description": "General Search",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/search\/articles": {
+                "description": "Article Search",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/search\/webinars": {
+                "description": "Webinar Search",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/search\/suggestions": {
+                "description": "Search Suggestions",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/search\/filters": {
+                "description": "Search Filters",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "frontend_pages": {
+            "\/": {
+                "description": "Homepage",
+                "status": "PASS",
+                "response": "Page loaded successfully"
+            },
+            "\/about.php": {
+                "description": "About Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/contact.php": {
+                "description": "Contact Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/webinars.php": {
+                "description": "Webinars Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/blog.php": {
+                "description": "Blog Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/search.php": {
+                "description": "Search Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/login.php": {
+                "description": "Login Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/register.php": {
+                "description": "Register Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/dashboard.php": {
+                "description": "Dashboard Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            },
+            "\/research-ai.php": {
+                "description": "Research AI Page",
+                "status": "FAIL",
+                "response": "Page failed to load"
+            }
+        },
+        "api_endpoints": {
+            "\/api": {
+                "description": "API Root",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/docs": {
+                "description": "API Documentation",
+                "status": "PASS",
+                "response": true
+            },
+            "\/api\/health": {
+                "description": "Health Check",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/auth": {
+                "description": "Authentication",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/users": {
+                "description": "Users",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/articles": {
+                "description": "Articles",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/webinars": {
+                "description": "Webinars",
+                "status": "PASS",
+                "response": true
+            },
+            "\/api\/search": {
+                "description": "Search",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/analytics": {
+                "description": "Analytics",
+                "status": "FAIL",
+                "response": false
+            },
+            "\/api\/payments": {
+                "description": "Payments",
+                "status": "FAIL",
+                "response": false
+            }
+        },
+        "database": {
+            "connection": {
+                "status": "FAIL",
+                "response": "Database connection failed: SQLSTATE[HY000] [1698] Access denied for user 'root'@'localhost'"
+            }
+        },
+        "file_system": {
+            "frontend\/": {
+                "description": "Frontend Directory",
+                "status": "PASS",
+                "response": "Directory exists"
+            },
+            "frontend\/assets\/": {
+                "description": "Assets Directory",
+                "status": "PASS",
+                "response": "Directory exists"
+            },
+            "frontend\/includes\/": {
+                "description": "Includes Directory",
+                "status": "PASS",
+                "response": "Directory exists"
+            },
+            "backend\/": {
+                "description": "Backend Directory",
+                "status": "PASS",
+                "response": "Directory exists"
+            },
+            "backend\/app\/": {
+                "description": "App Directory",
+                "status": "PASS",
+                "response": "Directory exists"
+            },
+            "backend\/database\/": {
+                "description": "Database Directory",
+                "status": "PASS",
+                "response": "Directory exists"
+            }
+        },
+        "websocket": {
+            "connection": {
+                "status": "FAIL",
+                "response": "WebSocket server not accessible"
+            }
+        },
+        "pwa_features": {
+            "frontend\/manifest.json": {
+                "description": "PWA Manifest",
+                "status": "PASS",
+                "response": "File exists"
+            },
+            "frontend\/sw.js": {
+                "description": "Service Worker",
+                "status": "PASS",
+                "response": "File exists"
+            },
+            "frontend\/offline.php": {
+                "description": "Offline Page",
+                "status": "PASS",
+                "response": "File exists"
+            }
+        },
+        "translation_system": {
+            "frontend\/includes\/translation.php": {
+                "description": "Translation Utility",
+                "status": "FAIL",
+                "response": "File missing"
+            },
+            "frontend\/assets\/js\/translations.js": {
+                "description": "Frontend Translations",
+                "status": "FAIL",
+                "response": "File missing"
+            }
+        },
+        "security_features": {
+            "csrf_protection": {
+                "description": "CSRF Protection",
+                "status": "PASS",
+                "response": "Security feature implemented"
+            },
+            "xss_protection": {
+                "description": "XSS Protection",
+                "status": "PASS",
+                "response": "Security feature implemented"
+            },
+            "sql_injection_protection": {
+                "description": "SQL Injection Protection",
+                "status": "PASS",
+                "response": "Security feature implemented"
+            },
+            "rate_limiting": {
+                "description": "Rate Limiting",
+                "status": "PASS",
+                "response": "Security feature implemented"
+            }
+        },
+        "performance": {
+            "execution_time": {
+                "description": "Test Execution Time",
+                "status": "PASS",
+                "response": "Execution time: 3.55 seconds"
+            }
+        }
+    }
+}

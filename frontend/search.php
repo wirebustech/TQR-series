@@ -43,132 +43,238 @@ if ($lang !== 'en') {
 
 // Get search parameters
 $query = $_GET['q'] ?? '';
-$type = $_GET['type'] ?? '';
+$type = $_GET['type'] ?? 'all';
+$category = $_GET['category'] ?? '';
 $sort = $_GET['sort'] ?? 'relevance';
 $page = max(1, intval($_GET['page'] ?? 1));
 $perPage = 10;
 
-// Mock search data
+// Initialize search results
 $searchData = [
-    'webinars' => [
-        [
-            'id' => 1,
-            'type' => 'webinar',
-            'title' => 'Advanced Grounded Theory Methodology',
-            'description' => 'Explore advanced techniques in grounded theory methodology for qualitative research.',
-            'author' => 'Dr. Sarah Johnson',
-            'category' => 'methodology',
-            'duration' => '90 minutes',
-            'date' => '2024-02-15',
-            'image' => 'assets/images/webinar-1.jpg',
-            'relevance' => 95
-        ],
-        [
-            'id' => 2,
-            'type' => 'webinar',
-            'title' => 'NVivo Software Masterclass',
-            'description' => 'Master NVivo software for qualitative data analysis with hands-on examples.',
-            'author' => 'Dr. Michael Chen',
-            'category' => 'software',
-            'duration' => '120 minutes',
-            'date' => '2024-02-20',
-            'image' => 'assets/images/webinar-2.jpg',
-            'relevance' => 88
-        ]
-    ],
-    'articles' => [
-        [
-            'id' => 1,
-            'type' => 'article',
-            'title' => 'Understanding Grounded Theory: A Comprehensive Guide',
-            'description' => 'Explore the fundamentals of grounded theory methodology and learn how to apply it effectively.',
-            'author' => 'Dr. Sarah Johnson',
-            'category' => 'methodology',
-            'readTime' => 8,
-            'date' => '2024-02-10',
-            'image' => 'assets/images/blog/grounded-theory.jpg',
-            'relevance' => 92
-        ],
-        [
-            'id' => 2,
-            'type' => 'article',
-            'title' => 'Conducting Effective Qualitative Interviews',
-            'description' => 'Master the art of qualitative interviewing with practical tips and techniques.',
-            'author' => 'Dr. Michael Chen',
-            'category' => 'interviews',
-            'readTime' => 12,
-            'date' => '2024-02-08',
-            'image' => 'assets/images/blog/interviews.jpg',
-            'relevance' => 85
-        ]
-    ],
-    'resources' => [
-        [
-            'id' => 1,
-            'type' => 'resource',
-            'title' => 'Qualitative Research Methods Handbook',
-            'description' => 'A comprehensive guide to qualitative research methodologies and best practices.',
-            'author' => 'TQRS Team',
-            'category' => 'methodology',
-            'fileType' => 'PDF',
-            'fileSize' => '2.5 MB',
-            'date' => '2024-01-15',
-            'image' => 'assets/images/resources/handbook.jpg',
-            'relevance' => 78
-        ]
-    ]
+    'results' => [],
+    'total_results' => 0,
+    'suggestions' => [],
+    'filters' => []
 ];
 
-// Filter and search results
+// Perform search if query is provided
+if ($query) {
+    try {
+        // Prepare search parameters
+        $searchParams = [
+            'query' => $query,
+            'type' => $type,
+            'sort' => $sort,
+            'page' => $page,
+            'per_page' => $perPage
+        ];
+        
+        if ($category) {
+            $searchParams['category'] = $category;
+        }
+        
+        // Make API request
+        $apiUrl = 'http://localhost:8000/api/search?' . http_build_query($searchParams);
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => 'Content-Type: application/json'
+            ]
+        ]);
+        
+        $response = file_get_contents($apiUrl, false, $context);
+        
+        if ($response !== false) {
+            $searchData = json_decode($response, true);
+            if (!$searchData['success']) {
+                throw new Exception('Search failed');
+            }
+            $searchData = $searchData['data'];
+        } else {
+            throw new Exception('API request failed');
+        }
+        
+    } catch (Exception $e) {
+        // Fallback to mock data if API fails
+        $searchData = getMockSearchData($query, $type, $sort);
+    }
+}
+
+// Get search filters
+$filters = [];
+try {
+    $filtersUrl = 'http://localhost:8000/api/search/filters';
+    $filtersResponse = file_get_contents($filtersUrl, false, $context);
+    
+    if ($filtersResponse !== false) {
+        $filtersData = json_decode($filtersResponse, true);
+        if ($filtersData['success']) {
+            $filters = $filtersData['data'];
+        }
+    }
+} catch (Exception $e) {
+    // Fallback filters
+    $filters = getMockFilters();
+}
+
+// Extract results for display
 $allResults = [];
-foreach ($searchData as $contentType => $items) {
-    if (!$type || $type === $contentType || $type === 'all') {
+$totalResults = $searchData['total_results'] ?? 0;
+
+if (isset($searchData['results'])) {
+    foreach ($searchData['results'] as $contentType => $contentData) {
+        if (isset($contentData['data'])) {
+            foreach ($contentData['data'] as $item) {
+                $item['contentType'] = $contentType;
+                $allResults[] = $item;
+            }
+        }
+    }
+}
+
+// Pagination
+$totalPages = ceil($totalResults / $perPage);
+$currentPage = $page;
+
+// Search suggestions
+$suggestions = $searchData['suggestions'] ?? [];
+
+/**
+ * Get mock search data for fallback
+ */
+function getMockSearchData($query, $type, $sort) {
+    $mockData = [
+        'webinars' => [
+            [
+                'id' => 1,
+                'type' => 'webinar',
+                'title' => 'Advanced Grounded Theory Methodology',
+                'description' => 'Explore advanced techniques in grounded theory methodology for qualitative research.',
+                'author' => 'Dr. Sarah Johnson',
+                'category' => 'methodology',
+                'duration' => '90 minutes',
+                'date' => '2024-02-15',
+                'image' => 'assets/images/webinar-1.jpg',
+                'relevance' => 95
+            ],
+            [
+                'id' => 2,
+                'type' => 'webinar',
+                'title' => 'NVivo Software Masterclass',
+                'description' => 'Master NVivo software for qualitative data analysis with hands-on examples.',
+                'author' => 'Dr. Michael Chen',
+                'category' => 'software',
+                'duration' => '120 minutes',
+                'date' => '2024-02-20',
+                'image' => 'assets/images/webinar-2.jpg',
+                'relevance' => 88
+            ]
+        ],
+        'blogs' => [
+            [
+                'id' => 1,
+                'type' => 'blog',
+                'title' => 'Understanding Grounded Theory: A Comprehensive Guide',
+                'description' => 'Explore the fundamentals of grounded theory methodology and learn how to apply it effectively.',
+                'author' => 'Dr. Sarah Johnson',
+                'category' => 'methodology',
+                'readTime' => 8,
+                'date' => '2024-02-10',
+                'image' => 'assets/images/blog/grounded-theory.jpg',
+                'relevance' => 92
+            ],
+            [
+                'id' => 2,
+                'type' => 'blog',
+                'title' => 'Conducting Effective Qualitative Interviews',
+                'description' => 'Master the art of qualitative interviewing with practical tips and techniques.',
+                'author' => 'Dr. Michael Chen',
+                'category' => 'interviews',
+                'readTime' => 12,
+                'date' => '2024-02-08',
+                'image' => 'assets/images/blog/interviews.jpg',
+                'relevance' => 85
+            ]
+        ]
+    ];
+
+    // Filter by type
+    if ($type !== 'all' && isset($mockData[$type])) {
+        $mockData = [$type => $mockData[$type]];
+    }
+
+    // Filter by query
+    foreach ($mockData as $contentType => &$items) {
+        $items = array_filter($items, function($item) use ($query) {
+            return stripos($item['title'], $query) !== false || 
+                   stripos($item['description'], $query) !== false ||
+                   stripos($item['author'], $query) !== false ||
+                   stripos($item['category'], $query) !== false;
+        });
+    }
+
+    // Sort results
+    $allResults = [];
+    foreach ($mockData as $contentType => $items) {
         foreach ($items as $item) {
             $item['contentType'] = $contentType;
             $allResults[] = $item;
         }
     }
-}
 
-// Filter by search query
-if ($query) {
-    $allResults = array_filter($allResults, function($item) use ($query) {
-        return stripos($item['title'], $query) !== false || 
-               stripos($item['description'], $query) !== false ||
-               stripos($item['author'], $query) !== false ||
-               stripos($item['category'], $query) !== false;
+    usort($allResults, function($a, $b) use ($sort) {
+        switch ($sort) {
+            case 'date':
+                return strtotime($b['date']) - strtotime($a['date']);
+            case 'popularity':
+                return ($b['relevance'] ?? 0) - ($a['relevance'] ?? 0);
+            case 'relevance':
+            default:
+                return ($b['relevance'] ?? 0) - ($a['relevance'] ?? 0);
+        }
     });
+
+    return [
+        'results' => [
+            'webinars' => ['data' => array_filter($allResults, fn($item) => $item['contentType'] === 'webinars')],
+            'blogs' => ['data' => array_filter($allResults, fn($item) => $item['contentType'] === 'blogs')]
+        ],
+        'total_results' => count($allResults),
+        'suggestions' => [
+            'grounded theory',
+            'qualitative interviews',
+            'NVivo software',
+            'data analysis',
+            'research methodology'
+        ]
+    ];
 }
 
-// Sort results
-usort($allResults, function($a, $b) use ($sort) {
-    switch ($sort) {
-        case 'date':
-            return strtotime($b['date']) - strtotime($a['date']);
-        case 'popularity':
-            return ($b['relevance'] ?? 0) - ($a['relevance'] ?? 0);
-        case 'relevance':
-        default:
-            return ($b['relevance'] ?? 0) - ($a['relevance'] ?? 0);
-    }
-});
-
-$totalResults = count($allResults);
-$totalPages = ceil($totalResults / $perPage);
-$offset = ($page - 1) * $perPage;
-$paginatedResults = array_slice($allResults, $offset, $perPage);
-
-// Search suggestions
-$suggestions = [
-    'grounded theory',
-    'qualitative interviews',
-    'NVivo software',
-    'data analysis',
-    'research methodology',
-    'case studies',
-    'phenomenology',
-    'thematic analysis'
-];
+/**
+ * Get mock filters for fallback
+ */
+function getMockFilters() {
+    return [
+        'categories' => [
+            'webinars' => ['methodology', 'software', 'interviews', 'analysis'],
+            'blogs' => ['methodology', 'interviews', 'software', 'analysis'],
+            'contributions' => ['methodology', 'interviews', 'software']
+        ],
+        'popular_tags' => [
+            'grounded theory',
+            'qualitative interviews',
+            'NVivo software',
+            'data analysis',
+            'research methodology'
+        ],
+        'sort_options' => [
+            'relevance' => 'Most Relevant',
+            'date' => 'Newest First',
+            'title' => 'Alphabetical',
+            'popularity' => 'Most Popular'
+        ]
+    ];
+}
 ?>
 
 <!-- Search Header -->
@@ -200,183 +306,213 @@ $suggestions = [
             <!-- Filters Sidebar -->
             <div class="col-lg-3 mb-4">
                 <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0">
+                            <i class="bi bi-funnel me-2"></i><?= htmlspecialchars($texts['filterBy']) ?>
+                        </h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title mb-3"><?= htmlspecialchars($texts['filterBy']) ?></h5>
-                        
                         <!-- Content Type Filter -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold"><?= htmlspecialchars($texts['contentType']) ?></label>
+                            <h6 class="mb-3"><?= htmlspecialchars($texts['contentType']) ?></h6>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="contentType" id="allContent" value="all" 
-                                       <?= !$type || $type === 'all' ? 'checked' : '' ?> onchange="filterResults()">
-                                <label class="form-check-label" for="allContent">
+                                <input class="form-check-input" type="radio" name="type" id="type-all" value="all" 
+                                       <?= $type === 'all' ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="type-all">
                                     <?= htmlspecialchars($texts['allContent']) ?>
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="contentType" id="webinars" value="webinars" 
-                                       <?= $type === 'webinars' ? 'checked' : '' ?> onchange="filterResults()">
-                                <label class="form-check-label" for="webinars">
+                                <input class="form-check-input" type="radio" name="type" id="type-webinars" value="webinars" 
+                                       <?= $type === 'webinars' ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="type-webinars">
                                     <?= htmlspecialchars($texts['webinars']) ?>
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="contentType" id="articles" value="articles" 
-                                       <?= $type === 'articles' ? 'checked' : '' ?> onchange="filterResults()">
-                                <label class="form-check-label" for="articles">
+                                <input class="form-check-input" type="radio" name="type" id="type-blogs" value="blogs" 
+                                       <?= $type === 'blogs' ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="type-blogs">
                                     <?= htmlspecialchars($texts['articles']) ?>
                                 </label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="contentType" id="resources" value="resources" 
-                                       <?= $type === 'resources' ? 'checked' : '' ?> onchange="filterResults()">
-                                <label class="form-check-label" for="resources">
-                                    <?= htmlspecialchars($texts['resources']) ?>
-                                </label>
-                            </div>
                         </div>
-                        
-                        <!-- Sort Options -->
+
+                        <!-- Category Filter -->
+                        <?php if (!empty($filters['categories'])): ?>
                         <div class="mb-4">
-                            <label class="form-label fw-bold"><?= htmlspecialchars($texts['sortBy']) ?></label>
-                            <select class="form-select" id="sortSelect" onchange="sortResults()">
-                                <option value="relevance"<?= $sort === 'relevance' ? ' selected' : '' ?>><?= htmlspecialchars($texts['relevance']) ?></option>
-                                <option value="date"<?= $sort === 'date' ? ' selected' : '' ?>><?= htmlspecialchars($texts['date']) ?></option>
-                                <option value="popularity"<?= $sort === 'popularity' ? ' selected' : '' ?>><?= htmlspecialchars($texts['popularity']) ?></option>
+                            <h6 class="mb-3"><?= htmlspecialchars($texts['category']) ?></h6>
+                            <select class="form-select" name="category" id="category-filter">
+                                <option value=""><?= htmlspecialchars($texts['allContent']) ?></option>
+                                <?php foreach ($filters['categories']['webinars'] ?? [] as $cat): ?>
+                                    <option value="<?= htmlspecialchars($cat) ?>" <?= $category === $cat ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars(ucfirst($cat)) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
-                        
-                        <!-- Search Suggestions -->
-                        <?php if ($query && $totalResults === 0): ?>
-                            <div class="border-top pt-3">
-                                <h6><?= htmlspecialchars($texts['suggestions']) ?></h6>
-                                <p class="small text-muted"><?= htmlspecialchars($texts['tryThese']) ?></p>
-                                <div class="d-flex flex-wrap gap-1">
-                                    <?php foreach (array_slice($suggestions, 0, 4) as $suggestion): ?>
-                                        <a href="?q=<?= urlencode($suggestion) ?>&lang=<?= urlencode($lang) ?>" 
-                                           class="badge bg-light text-dark text-decoration-none">
-                                            <?= htmlspecialchars($suggestion) ?>
-                                        </a>
-                                    <?php endforeach; ?>
-                                </div>
-                            </div>
                         <?php endif; ?>
+
+                        <!-- Sort Options -->
+                        <div class="mb-4">
+                            <h6 class="mb-3"><?= htmlspecialchars($texts['sortBy']) ?></h6>
+                            <select class="form-select" name="sort" id="sort-filter">
+                                <option value="relevance" <?= $sort === 'relevance' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['relevance']) ?>
+                                </option>
+                                <option value="date" <?= $sort === 'date' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['date']) ?>
+                                </option>
+                                <option value="popularity" <?= $sort === 'popularity' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['popularity']) ?>
+                                </option>
+                                <option value="title" <?= $sort === 'title' ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($texts['title']) ?>
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Apply Filters Button -->
+                        <button type="button" class="btn btn-primary w-100" onclick="applyFilters()">
+                            <i class="bi bi-search me-2"></i>Apply Filters
+                        </button>
                     </div>
                 </div>
+
+                <!-- Search Suggestions -->
+                <?php if (!empty($suggestions)): ?>
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-transparent">
+                        <h6 class="mb-0">
+                            <i class="bi bi-lightbulb me-2"></i><?= htmlspecialchars($texts['suggestions']) ?>
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-3"><?= htmlspecialchars($texts['tryThese']) ?></p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <?php foreach (array_slice($suggestions, 0, 6) as $suggestion): ?>
+                                <a href="search.php?q=<?= urlencode($suggestion) ?>&lang=<?= urlencode($lang) ?>" 
+                                   class="btn btn-outline-secondary btn-sm">
+                                    <?= htmlspecialchars($suggestion) ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
-            
+
             <!-- Search Results -->
             <div class="col-lg-9">
-                <?php if (empty($paginatedResults)): ?>
+                <?php if (empty($allResults)): ?>
+                    <!-- No Results -->
                     <div class="text-center py-5">
-                        <i class="bi bi-search-x fs-1 text-muted mb-3"></i>
-                        <h4 class="text-muted"><?= htmlspecialchars($texts['noResults']) ?></h4>
+                        <i class="bi bi-search display-1 text-muted mb-4"></i>
+                        <h3><?= htmlspecialchars($texts['noResults']) ?></h3>
                         <p class="text-muted"><?= htmlspecialchars($texts['noResultsText']) ?></p>
-                        
-                        <!-- Related Searches -->
-                        <div class="mt-4">
-                            <h6><?= htmlspecialchars($texts['relatedSearches']) ?></h6>
-                            <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                <?php foreach ($suggestions as $suggestion): ?>
-                                    <a href="?q=<?= urlencode($suggestion) ?>&lang=<?= urlencode($lang) ?>" 
-                                       class="btn btn-outline-primary btn-sm">
-                                        <?= htmlspecialchars($suggestion) ?>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
+                        <a href="index.php?lang=<?= urlencode($lang) ?>" class="btn btn-primary">
+                            <i class="bi bi-house me-2"></i>Go Home
+                        </a>
                     </div>
                 <?php else: ?>
                     <!-- Results List -->
-                    <?php foreach ($paginatedResults as $result): ?>
-                        <div class="card mb-3 border-0 shadow-sm">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <img src="<?= htmlspecialchars($result['image']) ?>" 
-                                             class="img-fluid rounded" 
-                                             alt="<?= htmlspecialchars($result['title']) ?>"
-                                             style="height: 120px; object-fit: cover;">
-                                    </div>
-                                    <div class="col-md-9">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <span class="badge bg-<?= $result['type'] === 'webinar' ? 'primary' : ($result['type'] === 'article' ? 'success' : 'warning') ?>">
-                                                <?= htmlspecialchars($texts[$result['type']] ?? $result['type']) ?>
-                                            </span>
-                                            <small class="text-muted">
-                                                <?= date('M j, Y', strtotime($result['date'])) ?>
-                                            </small>
-                                        </div>
-                                        
-                                        <h5 class="card-title">
-                                            <a href="<?= $result['type'] === 'webinar' ? 'webinar-details.php' : ($result['type'] === 'article' ? 'article.php' : 'resource.php') ?>?id=<?= $result['id'] ?>&lang=<?= urlencode($lang) ?>" 
-                                               class="text-decoration-none">
-                                                <?= htmlspecialchars($result['title']) ?>
-                                            </a>
-                                        </h5>
-                                        
-                                        <p class="card-text text-muted"><?= htmlspecialchars($result['description']) ?></p>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex align-items-center">
-                                                <small class="text-muted me-3">
-                                                    <i class="bi bi-person"></i> <?= htmlspecialchars($result['author']) ?>
+                    <div class="search-results">
+                        <?php foreach ($allResults as $result): ?>
+                            <div class="card border-0 shadow-sm mb-4 animate-on-scroll">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="d-flex align-items-start mb-2">
+                                                <span class="badge bg-primary me-2">
+                                                    <?= htmlspecialchars(ucfirst($result['contentType'])) ?>
+                                                </span>
+                                                <small class="text-muted">
+                                                    <?= htmlspecialchars($result['category'] ?? '') ?>
                                                 </small>
-                                                <small class="text-muted me-3">
-                                                    <i class="bi bi-tag"></i> <?= htmlspecialchars($texts[$result['category']] ?? $result['category']) ?>
-                                                </small>
-                                                <?php if (isset($result['duration'])): ?>
-                                                    <small class="text-muted me-3">
-                                                        <i class="bi bi-clock"></i> <?= htmlspecialchars($result['duration']) ?>
-                                                    </small>
-                                                <?php endif; ?>
-                                                <?php if (isset($result['readTime'])): ?>
-                                                    <small class="text-muted me-3">
-                                                        <i class="bi bi-book"></i> <?= htmlspecialchars($result['readTime']) ?> <?= htmlspecialchars($texts['readTime']) ?>
-                                                    </small>
-                                                <?php endif; ?>
                                             </div>
                                             
-                                            <a href="<?= $result['type'] === 'webinar' ? 'webinar-details.php' : ($result['type'] === 'article' ? 'article.php' : 'resource.php') ?>?id=<?= $result['id'] ?>&lang=<?= urlencode($lang) ?>" 
-                                               class="btn btn-outline-primary btn-sm">
-                                                <?= htmlspecialchars($texts['viewDetails']) ?>
-                                            </a>
+                                            <h5 class="card-title mb-2">
+                                                <a href="<?= getResultUrl($result) ?>" class="text-decoration-none">
+                                                    <?= htmlspecialchars($result['title']) ?>
+                                                </a>
+                                            </h5>
+                                            
+                                            <p class="card-text text-muted mb-3">
+                                                <?= htmlspecialchars(truncateText($result['description'] ?? '', 150)) ?>
+                                            </p>
+                                            
+                                            <div class="d-flex align-items-center text-muted small">
+                                                <span class="me-3">
+                                                    <i class="bi bi-person me-1"></i>
+                                                    <?= htmlspecialchars($result['author'] ?? 'Unknown') ?>
+                                                </span>
+                                                <span class="me-3">
+                                                    <i class="bi bi-calendar me-1"></i>
+                                                    <?= formatDate($result['date'] ?? '') ?>
+                                                </span>
+                                                <?php if (isset($result['duration'])): ?>
+                                                    <span class="me-3">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        <?= htmlspecialchars($result['duration']) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                                <?php if (isset($result['readTime'])): ?>
+                                                    <span>
+                                                        <i class="bi bi-book me-1"></i>
+                                                        <?= $result['readTime'] ?> <?= htmlspecialchars($texts['readTime']) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
+                                        
+                                        <?php if (isset($result['image'])): ?>
+                                        <div class="col-md-4">
+                                            <img src="<?= htmlspecialchars($result['image']) ?>" 
+                                                 alt="<?= htmlspecialchars($result['title']) ?>"
+                                                 class="img-fluid rounded">
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <a href="<?= getResultUrl($result) ?>" class="btn btn-outline-primary btn-sm">
+                                            <?= htmlspecialchars($texts['viewDetails']) ?>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    <?php endforeach; ?>
-                    
+                        <?php endforeach; ?>
+                    </div>
+
                     <!-- Pagination -->
                     <?php if ($totalPages > 1): ?>
-                        <nav aria-label="Search results pagination" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                <?php if ($page > 1): ?>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?q=<?= urlencode($query) ?>&type=<?= urlencode($type) ?>&sort=<?= urlencode($sort) ?>&page=<?= $page - 1 ?>&lang=<?= urlencode($lang) ?>">
-                                            <i class="bi bi-chevron-left"></i>
-                                        </a>
-                                    </li>
-                                <?php endif; ?>
-                                
-                                <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
-                                        <a class="page-link" href="?q=<?= urlencode($query) ?>&type=<?= urlencode($type) ?>&sort=<?= urlencode($sort) ?>&page=<?= $i ?>&lang=<?= urlencode($lang) ?>">
-                                            <?= $i ?>
-                                        </a>
-                                    </li>
-                                <?php endfor; ?>
-                                
-                                <?php if ($page < $totalPages): ?>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?q=<?= urlencode($query) ?>&type=<?= urlencode($type) ?>&sort=<?= urlencode($sort) ?>&page=<?= $page + 1 ?>&lang=<?= urlencode($lang) ?>">
-                                            <i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    </li>
-                                <?php endif; ?>
-                            </ul>
-                        </nav>
+                    <nav aria-label="Search results pagination">
+                        <ul class="pagination justify-content-center">
+                            <?php if ($currentPage > 1): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= buildSearchUrl($query, $type, $category, $sort, $currentPage - 1) ?>">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                            
+                            <?php for ($i = max(1, $currentPage - 2); $i <= min($totalPages, $currentPage + 2); $i++): ?>
+                                <li class="page-item <?= $i === $currentPage ? 'active' : '' ?>">
+                                    <a class="page-link" href="<?= buildSearchUrl($query, $type, $category, $sort, $i) ?>">
+                                        <?= $i ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+                            
+                            <?php if ($currentPage < $totalPages): ?>
+                                <li class="page-item">
+                                    <a class="page-link" href="<?= buildSearchUrl($query, $type, $category, $sort, $currentPage + 1) ?>">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                        </ul>
+                    </nav>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
@@ -384,48 +520,110 @@ $suggestions = [
     </div>
 </div>
 
+<!-- JavaScript for filter functionality -->
 <script>
-function filterResults() {
-    const contentType = document.querySelector('input[name="contentType"]:checked').value;
-    const currentUrl = new URL(window.location);
+function applyFilters() {
+    const type = document.querySelector('input[name="type"]:checked')?.value || 'all';
+    const category = document.getElementById('category-filter').value;
+    const sort = document.getElementById('sort-filter').value;
     
-    if (contentType && contentType !== 'all') {
-        currentUrl.searchParams.set('type', contentType);
+    const url = new URL(window.location);
+    url.searchParams.set('type', type);
+    if (category) {
+        url.searchParams.set('category', category);
     } else {
-        currentUrl.searchParams.delete('type');
+        url.searchParams.delete('category');
     }
+    url.searchParams.set('sort', sort);
+    url.searchParams.delete('page'); // Reset to first page
     
-    currentUrl.searchParams.delete('page'); // Reset to first page
-    window.location.href = currentUrl.toString();
+    window.location.href = url.toString();
 }
 
-function sortResults() {
-    const sort = document.getElementById('sortSelect').value;
-    const currentUrl = new URL(window.location);
-    
-    if (sort) {
-        currentUrl.searchParams.set('sort', sort);
-    }
-    
-    currentUrl.searchParams.delete('page'); // Reset to first page
-    window.location.href = currentUrl.toString();
-}
-
-// Highlight search terms in results
-document.addEventListener('DOMContentLoaded', function() {
-    const query = '<?= addslashes($query) ?>';
-    if (query) {
-        const results = document.querySelectorAll('.card-title, .card-text');
-        results.forEach(element => {
-            const text = element.innerHTML;
-            const highlightedText = text.replace(
-                new RegExp(query, 'gi'),
-                match => `<mark class="bg-warning">${match}</mark>`
-            );
-            element.innerHTML = highlightedText;
-        });
-    }
+// Auto-apply filters when changed
+document.querySelectorAll('input[name="type"], #category-filter, #sort-filter').forEach(element => {
+    element.addEventListener('change', applyFilters);
 });
 </script>
+
+<?php
+/**
+ * Get URL for search result
+ */
+function getResultUrl($result) {
+    $baseUrl = '';
+    switch ($result['contentType']) {
+        case 'webinars':
+            $baseUrl = 'webinar-details.php';
+            break;
+        case 'blogs':
+            $baseUrl = 'article.php';
+            break;
+        case 'pages':
+            $baseUrl = 'page.php';
+            break;
+        case 'contributions':
+            $baseUrl = 'contribution.php';
+            break;
+        default:
+            $baseUrl = 'index.php';
+    }
+    
+    $params = ['id' => $result['id'], 'lang' => $GLOBALS['lang']];
+    return $baseUrl . '?' . http_build_query($params);
+}
+
+/**
+ * Build search URL with parameters
+ */
+function buildSearchUrl($query, $type, $category, $sort, $page = 1) {
+    $params = [
+        'q' => $query,
+        'type' => $type,
+        'sort' => $sort,
+        'page' => $page,
+        'lang' => $GLOBALS['lang']
+    ];
+    
+    if ($category) {
+        $params['category'] = $category;
+    }
+    
+    return 'search.php?' . http_build_query($params);
+}
+
+/**
+ * Truncate text to specified length
+ */
+function truncateText($text, $maxLength) {
+    if (strlen($text) <= $maxLength) {
+        return $text;
+    }
+    return substr($text, 0, $maxLength) . '...';
+}
+
+/**
+ * Format date for display
+ */
+function formatDate($dateString) {
+    if (empty($dateString)) {
+        return '';
+    }
+    
+    $date = new DateTime($dateString);
+    $now = new DateTime();
+    $diff = $date->diff($now);
+    
+    if ($diff->days === 0) {
+        return 'Today';
+    } elseif ($diff->days === 1) {
+        return 'Yesterday';
+    } elseif ($diff->days <= 7) {
+        return $diff->days . ' days ago';
+    } else {
+        return $date->format('M j, Y');
+    }
+}
+?>
 
 <?php include_once __DIR__ . '/includes/footer.php'; ?> 
