@@ -17,7 +17,9 @@ use App\Http\Controllers\Api\NewsletterSubscriptionController;
 use App\Http\Controllers\Api\WebinarController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AdvancedAnalyticsController;
 use App\Http\Controllers\Api\SitemapController;
+use App\Http\Controllers\Api\PaymentController;
 
 // Authentication
 Route::post('register', [AuthController::class, 'register']);
@@ -73,13 +75,38 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('export-report', [AnalyticsController::class, 'exportReport']);
     });
     
+    // Advanced Analytics (admin operations)
+    Route::prefix('advanced-analytics')->group(function () {
+        Route::get('overview', [AdvancedAnalyticsController::class, 'getOverview']);
+        Route::get('users', [AdvancedAnalyticsController::class, 'getUserAnalytics']);
+        Route::get('content', [AdvancedAnalyticsController::class, 'getContentAnalytics']);
+        Route::get('financial', [AdvancedAnalyticsController::class, 'getFinancialAnalytics']);
+        Route::get('real-time', [AdvancedAnalyticsController::class, 'getRealTimeAnalytics']);
+        Route::get('export', [AdvancedAnalyticsController::class, 'exportReport']);
+    });
+    
     // Sitemap (admin operations)
     Route::prefix('sitemap')->group(function () {
         Route::post('generate', [SitemapController::class, 'generate']);
         Route::post('validate', [SitemapController::class, 'validate']);
     });
     
+    // Payment routes
+    Route::prefix('payments')->group(function () {
+        Route::post('webinar', [PaymentController::class, 'createWebinarPayment']);
+        Route::post('donation', [PaymentController::class, 'createDonation']);
+        Route::post('subscription', [PaymentController::class, 'createSubscription']);
+        Route::post('confirm', [PaymentController::class, 'confirmPayment']);
+        Route::get('history', [PaymentController::class, 'getPaymentHistory']);
+        Route::get('methods', [PaymentController::class, 'getPaymentMethods']);
+        Route::post('methods', [PaymentController::class, 'addPaymentMethod']);
+        Route::delete('methods/{id}', [PaymentController::class, 'removePaymentMethod']);
+    });
+    
     // User profile (authenticated users)
     Route::get('profile', [UserController::class, 'profile']);
     Route::put('profile', [UserController::class, 'updateProfile']);
 });
+
+// Webhook routes (no auth required)
+Route::post('webhooks/stripe', [PaymentController::class, 'handleWebhook']);
