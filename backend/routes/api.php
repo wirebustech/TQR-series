@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AdvancedAnalyticsController;
 use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\TranslationController;
 
 use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\UserDashboardController;
@@ -83,13 +84,27 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // User Dashboard Routes
     Route::prefix('dashboard')->group(function () {
-        Route::get('/', [UserDashboardController::class, 'getDashboard']);
-        Route::post('/update-last-seen', [UserDashboardController::class, 'updateLastSeen']);
-        Route::get('/learning-path', [UserDashboardController::class, 'getLearningPath']);
+        Route::get('/', [UserDashboardController::class, 'index']);
+        Route::get('/stats', [UserDashboardController::class, 'stats']);
+        Route::get('/activity', [UserDashboardController::class, 'activity']);
+        Route::get('/recommendations', [UserDashboardController::class, 'recommendations']);
     });
 
-    // Resource routes (CRUD)
+    // Content Management Routes
+    Route::prefix('content')->group(function () {
+        Route::get('/', [ContentManagementController::class, 'index']);
+        Route::get('/stats', [ContentManagementController::class, 'stats']);
+        Route::post('/bulk-update', [ContentManagementController::class, 'bulkUpdate']);
+    });
+
+    // Page Management Routes
     Route::apiResource('pages', PageController::class);
+    Route::get('pages/slug/{slug}', [PageController::class, 'showBySlug']);
+    Route::get('pages/stats', [PageController::class, 'stats']);
+    Route::post('pages/{id}/duplicate', [PageController::class, 'duplicate']);
+    Route::post('pages/bulk-update', [PageController::class, 'bulkUpdate']);
+
+    // Resource routes (CRUD)
     Route::apiResource('sections', SectionController::class);
     Route::apiResource('blogs', BlogController::class);
     Route::apiResource('media-library', MediaLibraryController::class);
@@ -181,3 +196,7 @@ Route::post('webhooks/stripe', [PaymentController::class, 'handleWebhook']);
 
 // Beta waitlist (public)
 Route::post('beta-waitlist', [BetaSignupController::class, 'store']);
+
+// Translation routes
+Route::get('translations/{language?}', [TranslationController::class, 'getTranslations']);
+Route::get('languages', [TranslationController::class, 'getAvailableLanguages']);

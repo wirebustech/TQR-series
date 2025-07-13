@@ -18,12 +18,15 @@ class Page extends Model
     protected $fillable = [
         'title',
         'slug',
+        'language',
+        'description',
         'content',
         'meta_title',
         'meta_description',
+        'meta_keywords',
         'is_published',
-        'published_at',
-        'user_id',
+        'created_by',
+        'updated_by',
     ];
 
     /**
@@ -33,15 +36,24 @@ class Page extends Model
      */
     protected $casts = [
         'is_published' => 'boolean',
-        'published_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
      * Get the user who created this page.
      */
-    public function user()
+    public function creator()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the user who last updated this page.
+     */
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     /**
@@ -61,14 +73,22 @@ class Page extends Model
     }
 
     /**
+     * Scope a query to filter by language.
+     */
+    public function scopeByLanguage($query, $language)
+    {
+        return $query->where('language', $language);
+    }
+
+    /**
      * Scope a query to search pages.
      */
     public function scopeSearch($query, $search)
     {
-        return $query->where(function ($q) use ($search) {
-            $q->where('title', 'like', "%{$search}%")
-              ->orWhere('content', 'like', "%{$search}%")
-              ->orWhere('slug', 'like', "%{$search}%");
+        return $query->where(function ($query) use ($search) {
+            $query->where('title', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
         });
     }
 
@@ -89,11 +109,13 @@ class Page extends Model
     }
 
     /**
-     * Get the status badge color.
+     * Get the status badge HTML.
      */
     public function getStatusBadgeAttribute()
     {
-        return $this->is_published ? 'success' : 'secondary';
+        return $this->is_published 
+            ? '<span class="badge bg-success">Published</span>'
+            : '<span class="badge bg-secondary">Draft</span>';
     }
 
     /**
@@ -105,10 +127,38 @@ class Page extends Model
     }
 
     /**
-     * Get the formatted published date.
+     * Get the formatted creation date.
      */
-    public function getFormattedPublishedDateAttribute()
+    public function getFormattedCreatedDateAttribute()
     {
-        return $this->published_at ? $this->published_at->format('M j, Y') : 'Not published';
+        return $this->created_at ? $this->created_at->format('M j, Y g:i A') : 'N/A';
+    }
+
+    /**
+     * Get the language name.
+     */
+    public function getLanguageNameAttribute()
+    {
+        $languages = [
+            'en' => 'English',
+            'fr' => 'Français',
+            'es' => 'Español'
+        ];
+        
+        return $languages[$this->language] ?? ucfirst($this->language);
+    }
+
+    /**
+     * Get the language flag.
+     */
+    public function getLanguageFlagAttribute()
+    {
+        $flags = [
+            'en' => '🇺🇸',
+            'fr' => '🇫🇷',
+            'es' => '🇪🇸'
+        ];
+        
+        return $flags[$this->language] ?? '🌐';
     }
 } 

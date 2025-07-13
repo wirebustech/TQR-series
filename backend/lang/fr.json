@@ -1,0 +1,77 @@
+{
+    "opportunities": {
+        "title": "Dernières Opportunités",
+        "subtitle": "Découvrez de nouvelles collaborations de recherche et opportunités de financement",
+        "no_opportunities": "Aucune opportunité disponible pour le moment.",
+        "check_back": "Revenez bientôt pour de nouvelles opportunités !",
+        "types": {
+            "research": "Recherche",
+            "collaboration": "Collaboration", 
+            "funding": "Financement",
+            "conference": "Conférence",
+            "publication": "Publication"
+        },
+        "admin": {
+            "page_title": "Gérer les Opportunités",
+            "page_subtitle": "Ajouter, modifier et gérer les opportunités de recherche et collaborations",
+            "add_opportunity": "Ajouter une Nouvelle Opportunité",
+            "edit_opportunity": "Modifier l'Opportunité",
+            "search_opportunities": "Rechercher des opportunités...",
+            "filter_by_type": "Filtrer par Type",
+            "all_types": "Tous les Types",
+            "status": "Statut",
+            "active": "Actif",
+            "inactive": "Inactif",
+            "actions": "Actions",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "save": "Enregistrer",
+            "cancel": "Annuler",
+            "title": "Titre",
+            "content": "Contenu",
+            "url": "URL",
+            "type": "Type",
+            "is_active": "Statut Actif",
+            "created_at": "Créé",
+            "updated_at": "Mis à jour",
+            "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette opportunité ?",
+            "success_created": "Opportunité créée avec succès !",
+            "success_updated": "Opportunité mise à jour avec succès !",
+            "success_deleted": "Opportunité supprimée avec succès !",
+            "error_occurred": "Une erreur s'est produite. Veuillez réessayer.",
+            "loading": "Chargement...",
+            "no_opportunities": "Aucune opportunité trouvée",
+            "showing_results": "Affichage de {count} opportunités"
+        },
+        "research_ai": {
+            "title": "IA de Recherche - Bientôt Disponible",
+            "subtitle": "Plateforme révolutionnaire de recherche qualitative alimentée par l'IA",
+            "description": "Rejoignez l'avenir de la recherche qualitative avec notre plateforme IA de pointe. Obtenez un accès anticipé aux outils qui transformeront la façon dont vous analysez, interprétez et découvrez des insights à partir de données qualitatives.",
+            "features": {
+                "automated_analysis": "Analyse Automatisée",
+                "automated_analysis_desc": "Codage et identification de thèmes alimentés par l'IA",
+                "intelligent_insights": "Insights Intelligents",
+                "intelligent_insights_desc": "Reconnaissance de motifs profonds et analyse de tendances",
+                "collaborative_tools": "Outils Collaboratifs",
+                "collaborative_tools_desc": "Recherche en équipe avec collaboration en temps réel",
+                "secure_platform": "Plateforme Sécurisée",
+                "secure_platform_desc": "Sécurité de niveau entreprise pour les données de recherche sensibles"
+            },
+            "beta_signup": {
+                "title": "Rejoindre la Bêta",
+                "subtitle": "Soyez parmi les premiers à découvrir l'avenir de la recherche qualitative",
+                "name": "Nom Complet",
+                "email": "Adresse Email",
+                "organization": "Organisation",
+                "role": "Rôle/Poste",
+                "preferences": "Intérêts de Recherche",
+                "preferences_placeholder": "Parlez-nous de vos intérêts de recherche et comment vous prévoyez utiliser l'IA de Recherche...",
+                "priority_access": "Accès Prioritaire",
+                "priority_access_desc": "Je suis intéressé par l'accès prioritaire pour les tests bêta",
+                "submit": "Rejoindre la Liste d'Attente Bêta",
+                "success": "Merci d'avoir rejoint notre liste d'attente bêta ! Nous vous informerons quand l'IA de Recherche sera disponible.",
+                "error": "Il y a eu une erreur lors du traitement de votre demande. Veuillez réessayer."
+            }
+        }
+    }
+} 

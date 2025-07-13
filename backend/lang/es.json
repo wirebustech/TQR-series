@@ -1,0 +1,77 @@
+{
+    "opportunities": {
+        "title": "Últimas Oportunidades",
+        "subtitle": "Descubre nuevas colaboraciones de investigación y oportunidades de financiación",
+        "no_opportunities": "No hay oportunidades disponibles en este momento.",
+        "check_back": "¡Vuelve pronto para nuevas oportunidades!",
+        "types": {
+            "research": "Investigación",
+            "collaboration": "Colaboración", 
+            "funding": "Financiación",
+            "conference": "Conferencia",
+            "publication": "Publicación"
+        },
+        "admin": {
+            "page_title": "Gestionar Oportunidades",
+            "page_subtitle": "Agregar, editar y gestionar oportunidades de investigación y colaboraciones",
+            "add_opportunity": "Agregar Nueva Oportunidad",
+            "edit_opportunity": "Editar Oportunidad",
+            "search_opportunities": "Buscar oportunidades...",
+            "filter_by_type": "Filtrar por Tipo",
+            "all_types": "Todos los Tipos",
+            "status": "Estado",
+            "active": "Activo",
+            "inactive": "Inactivo",
+            "actions": "Acciones",
+            "edit": "Editar",
+            "delete": "Eliminar",
+            "save": "Guardar",
+            "cancel": "Cancelar",
+            "title": "Título",
+            "content": "Contenido",
+            "url": "URL",
+            "type": "Tipo",
+            "is_active": "Estado Activo",
+            "created_at": "Creado",
+            "updated_at": "Actualizado",
+            "confirm_delete": "¿Estás seguro de que quieres eliminar esta oportunidad?",
+            "success_created": "¡Oportunidad creada exitosamente!",
+            "success_updated": "¡Oportunidad actualizada exitosamente!",
+            "success_deleted": "¡Oportunidad eliminada exitosamente!",
+            "error_occurred": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+            "loading": "Cargando...",
+            "no_opportunities": "No se encontraron oportunidades",
+            "showing_results": "Mostrando {count} oportunidades"
+        },
+        "research_ai": {
+            "title": "IA de Investigación - Próximamente",
+            "subtitle": "Plataforma revolucionaria de investigación cualitativa impulsada por IA",
+            "description": "Únete al futuro de la investigación cualitativa con nuestra plataforma de IA de vanguardia. Obtén acceso temprano a herramientas que transformarán cómo analizas, interpretas y descubres insights de datos cualitativos.",
+            "features": {
+                "automated_analysis": "Análisis Automatizado",
+                "automated_analysis_desc": "Codificación e identificación de temas impulsada por IA",
+                "intelligent_insights": "Insights Inteligentes",
+                "intelligent_insights_desc": "Reconocimiento profundo de patrones y análisis de tendencias",
+                "collaborative_tools": "Herramientas Colaborativas",
+                "collaborative_tools_desc": "Investigación en equipo con colaboración en tiempo real",
+                "secure_platform": "Plataforma Segura",
+                "secure_platform_desc": "Seguridad de nivel empresarial para datos de investigación sensibles"
+            },
+            "beta_signup": {
+                "title": "Únete a la Beta",
+                "subtitle": "Sé uno de los primeros en experimentar el futuro de la investigación cualitativa",
+                "name": "Nombre Completo",
+                "email": "Dirección de Email",
+                "organization": "Organización",
+                "role": "Rol/Posición",
+                "preferences": "Intereses de Investigación",
+                "preferences_placeholder": "Cuéntanos sobre tus intereses de investigación y cómo planeas usar la IA de Investigación...",
+                "priority_access": "Acceso Prioritario",
+                "priority_access_desc": "Estoy interesado en acceso prioritario para pruebas beta",
+                "submit": "Unirse a Lista de Espera Beta",
+                "success": "¡Gracias por unirte a nuestra lista de espera beta! Te notificaremos cuando la IA de Investigación esté disponible.",
+                "error": "Hubo un error procesando tu solicitud. Por favor, inténtalo de nuevo."
+            }
+        }
+    }
+} 

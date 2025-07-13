@@ -1,0 +1,77 @@
+{
+    "opportunities": {
+        "title": "Latest Opportunities",
+        "subtitle": "Discover new research collaborations and funding opportunities",
+        "no_opportunities": "No opportunities available at the moment.",
+        "check_back": "Check back soon for new opportunities!",
+        "types": {
+            "research": "Research",
+            "collaboration": "Collaboration", 
+            "funding": "Funding",
+            "conference": "Conference",
+            "publication": "Publication"
+        },
+        "admin": {
+            "page_title": "Manage Opportunities",
+            "page_subtitle": "Add, edit, and manage research opportunities and collaborations",
+            "add_opportunity": "Add New Opportunity",
+            "edit_opportunity": "Edit Opportunity",
+            "search_opportunities": "Search opportunities...",
+            "filter_by_type": "Filter by Type",
+            "all_types": "All Types",
+            "status": "Status",
+            "active": "Active",
+            "inactive": "Inactive",
+            "actions": "Actions",
+            "edit": "Edit",
+            "delete": "Delete",
+            "save": "Save",
+            "cancel": "Cancel",
+            "title": "Title",
+            "content": "Content",
+            "url": "URL",
+            "type": "Type",
+            "is_active": "Active Status",
+            "created_at": "Created",
+            "updated_at": "Updated",
+            "confirm_delete": "Are you sure you want to delete this opportunity?",
+            "success_created": "Opportunity created successfully!",
+            "success_updated": "Opportunity updated successfully!",
+            "success_deleted": "Opportunity deleted successfully!",
+            "error_occurred": "An error occurred. Please try again.",
+            "loading": "Loading...",
+            "no_opportunities": "No opportunities found",
+            "showing_results": "Showing {count} opportunities"
+        },
+        "research_ai": {
+            "title": "Research AI - Coming Soon",
+            "subtitle": "Revolutionary AI-powered qualitative research platform",
+            "description": "Join the future of qualitative research with our cutting-edge AI platform. Get early access to tools that will transform how you analyze, interpret, and discover insights from qualitative data.",
+            "features": {
+                "automated_analysis": "Automated Analysis",
+                "automated_analysis_desc": "AI-powered coding and theme identification",
+                "intelligent_insights": "Intelligent Insights",
+                "intelligent_insights_desc": "Deep pattern recognition and trend analysis",
+                "collaborative_tools": "Collaborative Tools",
+                "collaborative_tools_desc": "Team-based research with real-time collaboration",
+                "secure_platform": "Secure Platform",
+                "secure_platform_desc": "Enterprise-grade security for sensitive research data"
+            },
+            "beta_signup": {
+                "title": "Join the Beta",
+                "subtitle": "Be among the first to experience the future of qualitative research",
+                "name": "Full Name",
+                "email": "Email Address",
+                "organization": "Organization",
+                "role": "Role/Position",
+                "preferences": "Research Interests",
+                "preferences_placeholder": "Tell us about your research interests and how you plan to use Research AI...",
+                "priority_access": "Priority Access",
+                "priority_access_desc": "I'm interested in priority access for beta testing",
+                "submit": "Join Beta Waitlist",
+                "success": "Thank you for joining our beta waitlist! We'll notify you when Research AI becomes available.",
+                "error": "There was an error processing your request. Please try again."
+            }
+        }
+    }
+} 

@@ -1,27 +1,8 @@
 <?php
-include_once __DIR__ . '/translate.php';
+require_once __DIR__ . '/translation.php';
 
-$lang = $_GET['lang'] ?? 'en';
-$texts = [
-    'home' => 'Home',
-    'about' => 'About',
-    'webinars' => 'Webinars',
-    'blog' => 'Blog',
-    'research' => 'Research',
-    'ai_app' => 'AI App',
-    'contact' => 'Contact',
-    'login' => 'Login',
-    'register' => 'Register',
-    'search' => 'Search...',
-    'admin' => 'Admin',
-    'profile' => 'Profile',
-    'logout' => 'Logout'
-];
-if ($lang !== 'en') {
-    foreach ($texts as $k => $v) {
-        $texts[$k] = translateText($v, $lang, 'en');
-    }
-}
+$lang = getCurrentLanguage();
+$texts = getTranslations($lang);
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($lang) ?>">
@@ -49,47 +30,53 @@ if ($lang !== 'en') {
             font-weight: bold;
             font-size: 1.5rem;
         }
-        .lang-switcher {
-            margin-left: 1rem;
-        }
-        .navbar-nav .nav-link {
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-        .navbar-nav .nav-link:hover {
-            color: #0d6efd !important;
-        }
+        
         .search-form {
-            position: relative;
+            min-width: 250px;
         }
-        .search-form .form-control {
-            padding-right: 40px;
-        }
-        .search-form .btn {
-            position: absolute;
-            right: 0;
-            top: 0;
+        
+        .lang-switcher .form-select {
+            min-width: 130px;
             border: none;
-            background: none;
-            color: #6c757d;
+            background: transparent;
+            color: inherit;
+        }
+        
+        .lang-switcher .form-select:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .navbar-dark .lang-switcher .form-select {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .navbar-dark .lang-switcher .form-select option {
+            color: #000;
+        }
+        
+        @media (max-width: 768px) {
+            .search-form {
+                min-width: 200px;
+                margin-bottom: 1rem;
+            }
+            
+            .lang-switcher {
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <!-- Brand -->
             <a class="navbar-brand" href="index.php?lang=<?= urlencode($lang) ?>">
-                <i class="bi bi-book"></i> TQRS
+                <i class="bi bi-journal-bookmark"></i> TQRS
             </a>
-
-            <!-- Mobile Toggle -->
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
-            <!-- Navigation Items -->
+            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -119,7 +106,7 @@ if ($lang !== 'en') {
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="research-ai.php?lang=<?= urlencode($lang) ?>">
-                            <i class="bi bi-robot"></i> <?= htmlspecialchars($texts['ai_app']) ?>
+                            <i class="bi bi-robot"></i> <?= htmlspecialchars($texts['research_ai']) ?>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -133,7 +120,7 @@ if ($lang !== 'en') {
                 <form class="search-form me-3">
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="<?= htmlspecialchars($texts['search']) ?>" id="searchInput">
-                        <button class="btn" type="submit">
+                        <button class="btn btn-outline-light" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
@@ -141,49 +128,27 @@ if ($lang !== 'en') {
 
                 <!-- Language Switcher -->
                 <div class="lang-switcher">
-                    <form method="get" class="d-flex">
-                        <select name="lang" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="en"<?= $lang=='en'?' selected':'' ?>>🇺🇸 English</option>
-                            <option value="fr"<?= $lang=='fr'?' selected':'' ?>>🇫🇷 Français</option>
-                            <option value="es"<?= $lang=='es'?' selected':'' ?>>🇪🇸 Español</option>
-                        </select>
-                    </form>
+                    <?php include __DIR__ . '/../components/language-switcher.php'; ?>
                 </div>
 
-                <!-- User Actions -->
-                <ul class="navbar-nav ms-3">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="profile.php?lang=<?= urlencode($lang) ?>">
-                                    <i class="bi bi-person"></i> <?= htmlspecialchars($texts['profile']) ?>
-                                </a></li>
-                                <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-                                    <li><a class="dropdown-item" href="../admin/index.php?lang=<?= urlencode($lang) ?>">
-                                        <i class="bi bi-gear"></i> <?= htmlspecialchars($texts['admin']) ?>
-                                    </a></li>
-                                <?php endif; ?>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="logout.php">
-                                    <i class="bi bi-box-arrow-right"></i> <?= htmlspecialchars($texts['logout']) ?>
-                                </a></li>
-                            </ul>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="login.php?lang=<?= urlencode($lang) ?>">
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <?= htmlspecialchars($texts['profile']) ?>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="admin/index.php?lang=<?= urlencode($lang) ?>">
+                                <i class="bi bi-gear"></i> <?= htmlspecialchars($texts['admin']) ?>
+                            </a></li>
+                            <li><a class="dropdown-item" href="login.php?lang=<?= urlencode($lang) ?>">
                                 <i class="bi bi-box-arrow-in-right"></i> <?= htmlspecialchars($texts['login']) ?>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-primary btn-sm" href="register.php?lang=<?= urlencode($lang) ?>">
-                                <?= htmlspecialchars($texts['register']) ?>
-                            </a>
-                        </li>
-                    <?php endif; ?>
+                            </a></li>
+                            <li><a class="dropdown-item" href="register.php?lang=<?= urlencode($lang) ?>">
+                                <i class="bi bi-person-plus"></i> <?= htmlspecialchars($texts['register']) ?>
+                            </a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
