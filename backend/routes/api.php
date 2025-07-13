@@ -14,10 +14,16 @@ use App\Http\Controllers\Api\BetaSignupController;
 use App\Http\Controllers\Api\ResearchContributionController;
 use App\Http\Controllers\Api\SupportDonationController;
 use App\Http\Controllers\Api\NewsletterSubscriptionController;
+use App\Http\Controllers\Api\WebinarController;
 
 // Authentication
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+
+// Public webinars routes (for frontend display)
+Route::get('webinars', [WebinarController::class, 'index']);
+Route::get('webinars/{webinar}', [WebinarController::class, 'show']);
+Route::get('webinars/stats', [WebinarController::class, 'stats']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
@@ -36,4 +42,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('research-contributions', ResearchContributionController::class);
     Route::apiResource('support-donations', SupportDonationController::class);
     Route::apiResource('newsletter-subscriptions', NewsletterSubscriptionController::class);
+    
+    // Webinars (admin operations)
+    Route::post('webinars', [WebinarController::class, 'store']);
+    Route::put('webinars/{webinar}', [WebinarController::class, 'update']);
+    Route::delete('webinars/{webinar}', [WebinarController::class, 'destroy']);
+    Route::post('webinars/bulk-action', [WebinarController::class, 'bulkAction']);
 });

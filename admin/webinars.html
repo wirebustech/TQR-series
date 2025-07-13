@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webinars Management - TQRS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link href="assets/css/admin.css" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>TQRS Admin</h3>
+            </div>
+            <ul class="list-unstyled components">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="pages.html">
+                        <i class="bi bi-file-text"></i> Pages
+                    </a>
+                </li>
+                <li>
+                    <a href="blogs.html">
+                        <i class="bi bi-journal-text"></i> Blogs
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="webinars.html">
+                        <i class="bi bi-camera-video"></i> Webinars
+                    </a>
+                </li>
+                <li>
+                    <a href="users.html">
+                        <i class="bi bi-people"></i> Users
+                    </a>
+                </li>
+                <li>
+                    <a href="contributions.html">
+                        <i class="bi bi-file-earmark-text"></i> Contributions
+                    </a>
+                </li>
+                <li>
+                    <a href="analytics.html">
+                        <i class="bi bi-graph-up"></i> Analytics
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> Admin
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="bi bi-camera-video"></i> Webinars Management</h2>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#webinarModal" id="addWebinarBtn">
+                                <i class="bi bi-plus-circle"></i> Add New Webinar
+                            </button>
+                        </div>
+
+                        <!-- Stats Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="totalWebinars">0</h4>
+                                                <p class="card-text">Total Webinars</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-camera-video fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="upcomingWebinars">0</h4>
+                                                <p class="card-text">Upcoming</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-calendar-event fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="liveWebinars">0</h4>
+                                                <p class="card-text">Live Now</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-broadcast fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="completedWebinars">0</h4>
+                                                <p class="card-text">Completed</p>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-check-circle fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Webinars Table -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">All Webinars</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="webinarsTable" class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Title</th>
+                                                <th>Description</th>
+                                                <th>Date & Time</th>
+                                                <th>Duration</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Data will be loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webinar Modal -->
+    <div class="modal fade" id="webinarModal" tabindex="-1" aria-labelledby="webinarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="webinarModalLabel">Add New Webinar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="webinarForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="webinarId" name="id">
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="webinarTitle" class="form-label">Title *</label>
+                                    <input type="text" class="form-control" id="webinarTitle" name="title" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="webinarStatus" class="form-label">Status</label>
+                                    <select class="form-select" id="webinarStatus" name="status">
+                                        <option value="draft">Draft</option>
+                                        <option value="published">Published</option>
+                                        <option value="live">Live</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="webinarDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="webinarDescription" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webinarDate" class="form-label">Date *</label>
+                                    <input type="date" class="form-control" id="webinarDate" name="date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webinarTime" class="form-label">Time *</label>
+                                    <input type="time" class="form-control" id="webinarTime" name="time" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webinarDuration" class="form-label">Duration (minutes)</label>
+                                    <input type="number" class="form-control" id="webinarDuration" name="duration" min="15" max="480" value="60">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webinarMaxAttendees" class="form-label">Max Attendees</label>
+                                    <input type="number" class="form-control" id="webinarMaxAttendees" name="max_attendees" min="1" value="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webinarPlatform" class="form-label">Platform</label>
+                                    <select class="form-select" id="webinarPlatform" name="platform">
+                                        <option value="zoom">Zoom</option>
+                                        <option value="teams">Microsoft Teams</option>
+                                        <option value="meet">Google Meet</option>
+                                        <option value="webex">Cisco Webex</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="webinarMeetingUrl" class="form-label">Meeting URL</label>
+                                    <input type="url" class="form-control" id="webinarMeetingUrl" name="meeting_url" placeholder="https://...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="webinarTags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="webinarTags" name="tags" placeholder="Enter tags separated by commas">
+                            <div class="form-text">Separate tags with commas (e.g., research, methodology, qualitative)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="webinarImage" class="form-label">Featured Image</label>
+                            <input type="file" class="form-control" id="webinarImage" name="image" accept="image/*">
+                            <div class="form-text">Recommended size: 800x600 pixels</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="webinarRequiresRegistration" name="requires_registration" checked>
+                                <label class="form-check-label" for="webinarRequiresRegistration">
+                                    Requires Registration
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="webinarIsPublic" name="is_public" checked>
+                                <label class="form-check-label" for="webinarIsPublic">
+                                    Public Webinar
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveWebinarBtn">
+                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            Save Webinar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteWebinarModal" tabindex="-1" aria-labelledby="deleteWebinarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteWebinarModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this webinar? This action cannot be undone.</p>
+                    <p class="text-muted" id="deleteWebinarTitle"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteWebinarBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        Delete Webinar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/webinars.js"></script>
+</body>
+</html> 

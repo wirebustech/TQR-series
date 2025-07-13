@@ -1,0 +1,20 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f8f9fa;
+}
+#sidebar {
+  min-height: 100vh;
+  background: #212529;
+}
+#sidebar .nav-link.active, #sidebar .nav-link:focus {
+  background: #0d6efd;
+  color: #fff !important;
+}
+#sidebar .nav-link {
+  border-radius: 0.25rem;
+  margin-bottom: 0.25rem;
+  transition: background 0.2s;
+}
+#adminContent {
+  min-height: 80vh;
+} 
