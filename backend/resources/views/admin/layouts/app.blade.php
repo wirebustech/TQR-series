@@ -131,6 +131,20 @@
                                 Analytics
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.newsletter') ? 'active' : '' }}" 
+                               href="{{ route('admin.newsletter') }}">
+                                <i class="bi bi-envelope"></i>
+                                Newsletter
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.donations') ? 'active' : '' }}" 
+                               href="{{ route('admin.donations') }}">
+                                <i class="bi bi-heart"></i>
+                                Donations
+                            </a>
+                        </li>
                     </ul>
                     
                     <hr class="my-4">

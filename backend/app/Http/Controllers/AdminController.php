@@ -161,6 +161,40 @@ class AdminController extends Controller
     }
 
     /**
+     * Show newsletter management
+     */
+    public function newsletter()
+    {
+        $this->requireAdmin();
+        
+        $subscriptions = \App\Models\NewsletterSubscription::paginate(15);
+        $stats = [
+            'total_subscribers' => \App\Models\NewsletterSubscription::count(),
+            'active_subscribers' => \App\Models\NewsletterSubscription::where('is_active', true)->count(),
+            'new_this_month' => \App\Models\NewsletterSubscription::where('created_at', '>=', now()->subMonth())->count(),
+        ];
+        
+        return view('admin.newsletter', compact('subscriptions', 'stats'));
+    }
+
+    /**
+     * Show donations management
+     */
+    public function donations()
+    {
+        $this->requireAdmin();
+        
+        $donations = \App\Models\SupportDonation::with('user')->paginate(15);
+        $stats = [
+            'total_donations' => \App\Models\SupportDonation::count(),
+            'total_amount' => \App\Models\SupportDonation::sum('amount'),
+            'this_month' => \App\Models\SupportDonation::where('created_at', '>=', now()->subMonth())->sum('amount'),
+        ];
+        
+        return view('admin.donations', compact('donations', 'stats'));
+    }
+
+    /**
      * Require admin access
      */
     private function requireAdmin()

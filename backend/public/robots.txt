@@ -1,2 +1,95 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemaps
+Sitemap: https://tqrs.org/sitemap.xml
+Sitemap: https://tqrs.org/sitemap-images.xml
+Sitemap: https://tqrs.org/sitemap-news.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /storage/
+Disallow: /vendor/
+Disallow: /node_modules/
+Disallow: /.env
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /package.json
+Disallow: /package-lock.json
+
+# Allow important public directories
+Allow: /public/
+Allow: /assets/
+Allow: /images/
+Allow: /css/
+Allow: /js/
+
+# Specific rules for search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+# Block common bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# Development and staging environments
+User-agent: *
+Disallow: /staging/
+Disallow: /dev/
+Disallow: /test/
+Disallow: /beta/
+
+# Allow specific content types
+Allow: /*.html$
+Allow: /*.php$
+Allow: /*.xml$
+Allow: /*.json$
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.ico$
+Allow: /*.pdf$
+
+# Block access to sensitive files
+Disallow: /*.log$
+Disallow: /*.sql$
+Disallow: /*.bak$
+Disallow: /*.tmp$
+Disallow: /*.temp$
+Disallow: /backup/
+Disallow: /logs/
+Disallow: /cache/
+Disallow: /tmp/
+Disallow: /temp/
+
+# Host directive for canonical domain
+Host: https://tqrs.org

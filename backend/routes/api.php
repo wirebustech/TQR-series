@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\NewsletterSubscriptionController;
 use App\Http\Controllers\Api\WebinarController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\SitemapController;
 
 // Authentication
 Route::post('register', [AuthController::class, 'register']);
@@ -26,6 +27,10 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('webinars', [WebinarController::class, 'index']);
 Route::get('webinars/{webinar}', [WebinarController::class, 'show']);
 Route::get('webinars/stats', [WebinarController::class, 'stats']);
+
+// Public sitemap routes
+Route::get('sitemap/status', [SitemapController::class, 'status']);
+Route::get('sitemap/stats', [SitemapController::class, 'stats']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
@@ -66,6 +71,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('top-content', [AnalyticsController::class, 'getTopContent']);
         Route::get('overview', [AnalyticsController::class, 'getOverview']);
         Route::get('export-report', [AnalyticsController::class, 'exportReport']);
+    });
+    
+    // Sitemap (admin operations)
+    Route::prefix('sitemap')->group(function () {
+        Route::post('generate', [SitemapController::class, 'generate']);
+        Route::post('validate', [SitemapController::class, 'validate']);
     });
     
     // User profile (authenticated users)
