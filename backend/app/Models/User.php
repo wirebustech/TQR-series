@@ -83,7 +83,7 @@ class User extends Authenticatable
      */
     public function getIsAdminAttribute($value)
     {
-        return $value || $this->role === 'admin';
+        return $value || $this->role === 'admin' || $this->role === 'moderator';
     }
 
     /**
@@ -91,7 +91,7 @@ class User extends Authenticatable
      */
     public function isAdmin()
     {
-        return $this->is_admin || $this->role === 'admin';
+        return $this->is_admin || $this->role === 'admin' || $this->role === 'moderator';
     }
 
     /**
