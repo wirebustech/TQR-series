@@ -20,7 +20,7 @@ use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AdvancedAnalyticsController;
 use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\SearchController;
+
 use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ContentManagementController;
@@ -69,13 +69,13 @@ Route::get('webinars/stats', [WebinarController::class, 'stats']);
 Route::get('sitemap/status', [SitemapController::class, 'status']);
 Route::get('sitemap/stats', [SitemapController::class, 'stats']);
 
-// Advanced Search Routes
-Route::prefix('search')->group(function () {
-    Route::get('/', [SearchController::class, 'search']);
-    Route::get('/filters', [SearchController::class, 'getFilters']);
-    Route::post('/track', [SearchController::class, 'trackSearch']);
-    Route::get('/analytics', [SearchController::class, 'getAnalytics'])->middleware('auth:sanctum');
-});
+// Advanced Search Routes (commented out - SearchController doesn't exist)
+// Route::prefix('search')->group(function () {
+//     Route::get('/', [SearchController::class, 'search']);
+//     Route::get('/filters', [SearchController::class, 'getFilters']);
+//     Route::post('/track', [SearchController::class, 'trackSearch']);
+//     Route::get('/analytics', [SearchController::class, 'getAnalytics'])->middleware('auth:sanctum');
+// });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
