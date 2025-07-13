@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'performance' => \App\Http\Middleware\PerformanceMiddleware::class,
+        ]);
+        
+        // Apply performance middleware globally to API routes
+        $middleware->api([
+            \App\Http\Middleware\PerformanceMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

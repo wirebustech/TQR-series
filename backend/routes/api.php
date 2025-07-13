@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\AdvancedAnalyticsController;
 use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\TranslationController;
+use App\Http\Controllers\Api\PerformanceController;
 
 use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\UserDashboardController;
@@ -193,6 +194,20 @@ Route::middleware('auth:sanctum')->group(function () {
     // User profile (authenticated users)
     Route::get('profile', [UserController::class, 'profile']);
     Route::put('profile', [UserController::class, 'updateProfile']);
+    
+    // Performance monitoring endpoints (admin only)
+    Route::prefix('performance')->middleware('admin')->group(function () {
+        Route::get('summary', [PerformanceController::class, 'summary']);
+        Route::get('metrics', [PerformanceController::class, 'metrics']);
+        Route::get('database', [PerformanceController::class, 'database']);
+        Route::get('cache', [PerformanceController::class, 'cache']);
+        Route::get('system', [PerformanceController::class, 'system']);
+        Route::get('slow-queries', [PerformanceController::class, 'slowQueries']);
+        Route::get('endpoints', [PerformanceController::class, 'endpoints']);
+        Route::get('config', [PerformanceController::class, 'config']);
+        Route::get('report', [PerformanceController::class, 'report']);
+        Route::delete('clear-metrics', [PerformanceController::class, 'clearMetrics']);
+    });
 });
 
 // Webhook routes (no auth required)
