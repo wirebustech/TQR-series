@@ -20,6 +20,9 @@ use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\AdvancedAnalyticsController;
 use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\ContentManagementController;
 
 // Authentication
 Route::post('register', [AuthController::class, 'register']);
@@ -34,9 +37,24 @@ Route::get('webinars/stats', [WebinarController::class, 'stats']);
 Route::get('sitemap/status', [SitemapController::class, 'status']);
 Route::get('sitemap/stats', [SitemapController::class, 'stats']);
 
+// Advanced Search Routes
+Route::prefix('search')->group(function () {
+    Route::get('/', [SearchController::class, 'search']);
+    Route::get('/filters', [SearchController::class, 'getFilters']);
+    Route::post('/track', [SearchController::class, 'trackSearch']);
+    Route::get('/analytics', [SearchController::class, 'getAnalytics'])->middleware('auth:sanctum');
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('user', [AuthController::class, 'user']);
+
+    // User Dashboard Routes
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [UserDashboardController::class, 'getDashboard']);
+        Route::post('/update-last-seen', [UserDashboardController::class, 'updateLastSeen']);
+        Route::get('/learning-path', [UserDashboardController::class, 'getLearningPath']);
+    });
 
     // Resource routes (CRUD)
     Route::apiResource('pages', PageController::class);
@@ -101,6 +119,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('methods', [PaymentController::class, 'getPaymentMethods']);
         Route::post('methods', [PaymentController::class, 'addPaymentMethod']);
         Route::delete('methods/{id}', [PaymentController::class, 'removePaymentMethod']);
+    });
+
+    // Content Management Routes (admin only)
+    Route::prefix('content-management')->middleware('can:manage-content')->group(function () {
+        Route::get('overview', [ContentManagementController::class, 'getOverview']);
+        Route::post('bulk-action', [ContentManagementController::class, 'bulkAction']);
+        Route::get('content', [ContentManagementController::class, 'getContent']);
+        Route::post('content', [ContentManagementController::class, 'createContent']);
+        Route::put('content/{id}', [ContentManagementController::class, 'updateContent']);
+        Route::delete('content/{id}', [ContentManagementController::class, 'deleteContent']);
+        Route::get('analytics', [ContentManagementController::class, 'getContentAnalytics']);
+        Route::get('media-library', [ContentManagementController::class, 'getMediaLibrary']);
+        Route::post('upload-media', [ContentManagementController::class, 'uploadMedia']);
     });
     
     // User profile (authenticated users)
