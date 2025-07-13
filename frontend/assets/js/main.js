@@ -1,421 +1,517 @@
-// TQRS Frontend Main JS
+/**
+ * TQRS Main JavaScript File
+ * Common functionality for the frontend
+ */
 
-document.addEventListener('DOMContentLoaded', function () {
-  // Spinner utility
-  function showSpinner(target) {
-    target.innerHTML = '<div class="spinner"><div class="spinner-border text-primary" role="status" aria-label="Loading"></div></div>';
-  }
+// Global variables
+let currentLang = 'en';
+let isOnline = navigator.onLine;
+let deferredPrompt = null;
 
-  // Load featured research/blogs
-  const featuredResearch = document.getElementById('featuredResearch');
-  const blogModal = new bootstrap.Modal(document.getElementById('blogModal'));
-  const blogModalBody = document.getElementById('blogModalBody');
-  if (featuredResearch) {
-    showSpinner(featuredResearch);
-    fetch('/api/blogs')
-      .then(res => res.json())
-      .then(blogs => {
-        if (Array.isArray(blogs) && blogs.length > 0) {
-          featuredResearch.innerHTML = blogs.slice(0, 3).map(blog => `
-            <div class="col-md-4 mb-4">
-              <div class="card h-100 shadow-sm blog-card" data-blog-id="${blog.id}">
-                <div class="card-body">
-                  <h5 class="card-title">${blog.title}</h5>
-                  <p class="card-text">${blog.excerpt || ''}</p>
-                  <a href="#" class="btn btn-outline-primary btn-sm read-more" data-blog-id="${blog.id}">Read More</a>
-                </div>
-              </div>
-            </div>
-          `).join('');
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+});
 
-          // Add click listeners for blog cards and read more buttons
-          featuredResearch.querySelectorAll('.read-more, .blog-card').forEach(el => {
-            el.addEventListener('click', function(e) {
-              e.preventDefault();
-              const blogId = this.getAttribute('data-blog-id');
-              if (blogId) {
-                fetch(`/api/blogs/${blogId}`)
-                  .then(res => res.json())
-                  .then(blog => {
-                    blogModalBody.innerHTML = `
-                      <h3>${blog.title}</h3>
-                      <div class="mb-2 text-muted">${blog.published_at ? new Date(blog.published_at).toLocaleDateString() : ''}</div>
-                      <div class="mb-3">${blog.excerpt || ''}</div>
-                      <div>${blog.content || ''}</div>
-                    `;
-                    blogModal.show();
-                  });
-              }
-            });
-          });
-        } else {
-          featuredResearch.innerHTML = '<p class="text-center">No featured research available yet.</p>';
-        }
-      })
-      .catch(() => {
-        featuredResearch.innerHTML = '<p class="text-center text-danger">Failed to load research highlights.</p>';
-      });
-  }
+/**
+ * Initialize the application
+ */
+function initializeApp() {
+    // Get current language from URL or localStorage
+    currentLang = getCurrentLanguage();
+    
+    // Initialize components
+    initializeSearch();
+    initializeNotifications();
+    initializePWA();
+    initializeOfflineDetection();
+    initializeAnimations();
+    
+    // Set up event listeners
+    setupEventListeners();
+}
 
-  // Load webinars
-  const webinarList = document.getElementById('webinarList');
-  const webinarModal = new bootstrap.Modal(document.getElementById('webinarModal'));
-  const webinarModalBody = document.getElementById('webinarModalBody');
-  if (webinarList) {
-    showSpinner(webinarList);
-    fetch('/api/webinar-courses')
-      .then(res => res.json())
-      .then(webinars => {
-        if (Array.isArray(webinars) && webinars.length > 0) {
-          webinarList.innerHTML = webinars.slice(0, 3).map(webinar => `
-            <div class="col-md-4 mb-4">
-              <div class="card h-100 shadow-sm webinar-card" data-webinar-id="${webinar.id}">
-                <div class="card-body">
-                  <h5 class="card-title">${webinar.title}</h5>
-                  <p class="card-text">${webinar.description ? webinar.description.substring(0, 80) + '...' : ''}</p>
-                  <div class="mb-2 text-muted">${webinar.start_time ? new Date(webinar.start_time).toLocaleString() : ''}</div>
-                  <a href="#" class="btn btn-outline-primary btn-sm webinar-details" data-webinar-id="${webinar.id}">Details</a>
-                </div>
-              </div>
-            </div>
-          `).join('');
+/**
+ * Get current language from URL parameters or localStorage
+ */
+function getCurrentLanguage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const langFromUrl = urlParams.get('lang');
+    
+    if (langFromUrl) {
+        localStorage.setItem('tqrs_language', langFromUrl);
+        return langFromUrl;
+    }
+    
+    return localStorage.getItem('tqrs_language') || 'en';
+}
 
-          // Add click listeners for webinar cards and details buttons
-          webinarList.querySelectorAll('.webinar-details, .webinar-card').forEach(el => {
-            el.addEventListener('click', function(e) {
-              e.preventDefault();
-              const webinarId = this.getAttribute('data-webinar-id');
-              if (webinarId) {
-                fetch(`/api/webinar-courses/${webinarId}`)
-                  .then(res => res.json())
-                  .then(webinar => {
-                    webinarModalBody.innerHTML = `
-                      <h3>${webinar.title}</h3>
-                      <div class="mb-2 text-muted">${webinar.start_time ? new Date(webinar.start_time).toLocaleString() : ''}</div>
-                      <div class="mb-3">${webinar.description || ''}</div>
-                      ${webinar.video_url ? `<div class='mb-2'><a href='${webinar.video_url}' target='_blank' class='btn btn-primary'>Watch Video</a></div>` : ''}
-                    `;
-                    webinarModal.show();
-                  });
-              }
-            });
-          });
-        } else {
-          webinarList.innerHTML = '<p class="text-center">No upcoming webinars at this time.</p>';
-        }
-      })
-      .catch(() => {
-        webinarList.innerHTML = '<p class="text-center text-danger">Failed to load webinars.</p>';
-      });
-  }
-
-  // Newsletter signup
-  const newsletterForm = document.getElementById('newsletterForm');
-  if (newsletterForm) {
-    newsletterForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email = document.getElementById('newsletterEmail').value;
-      const msg = document.getElementById('newsletterMsg');
-      msg.textContent = '';
-      const btn = newsletterForm.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      try {
-        const res = await fetch('/api/newsletter-subscriptions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
+/**
+ * Initialize search functionality
+ */
+function initializeSearch() {
+    const searchForm = document.querySelector('.search-form');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchForm && searchInput) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                performSearch(query);
+            }
         });
-        if (res.ok) {
-          msg.textContent = 'Thank you for subscribing!';
-          msg.className = 'text-success';
-          newsletterForm.reset();
-        } else {
-          const data = await res.json();
-          msg.textContent = data.message || 'Subscription failed.';
-          msg.className = 'text-danger';
-        }
-      } catch (err) {
-        msg.textContent = 'Network error.';
-        msg.className = 'text-danger';
-      }
-      btn.disabled = false;
+        
+        // Add search suggestions
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length > 2) {
+                showSearchSuggestions(query);
+            } else {
+                hideSearchSuggestions();
+            }
+        });
+    }
+}
+
+/**
+ * Perform search
+ */
+function performSearch(query) {
+    const searchUrl = `search.php?q=${encodeURIComponent(query)}&lang=${currentLang}`;
+    window.location.href = searchUrl;
+}
+
+/**
+ * Show search suggestions
+ */
+function showSearchSuggestions(query) {
+    // Remove existing suggestions
+    hideSearchSuggestions();
+    
+    // Create suggestions container
+    const suggestionsContainer = document.createElement('div');
+    suggestionsContainer.className = 'search-suggestions';
+    suggestionsContainer.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 0.375rem 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+    `;
+    
+    // Mock suggestions - in real app, this would come from API
+    const suggestions = [
+        'Qualitative research methods',
+        'Grounded theory',
+        'Phenomenology',
+        'Case study research',
+        'Interview techniques',
+        'Data analysis software'
+    ].filter(s => s.toLowerCase().includes(query.toLowerCase()));
+    
+    suggestions.forEach(suggestion => {
+        const suggestionItem = document.createElement('div');
+        suggestionItem.className = 'suggestion-item p-2 border-bottom';
+        suggestionItem.style.cursor = 'pointer';
+        suggestionItem.textContent = suggestion;
+        
+        suggestionItem.addEventListener('click', function() {
+            document.getElementById('searchInput').value = suggestion;
+            performSearch(suggestion);
+        });
+        
+        suggestionItem.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        
+        suggestionItem.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'white';
+        });
+        
+        suggestionsContainer.appendChild(suggestionItem);
     });
-  }
+    
+    const searchForm = document.querySelector('.search-form');
+    if (searchForm) {
+        searchForm.style.position = 'relative';
+        searchForm.appendChild(suggestionsContainer);
+    }
+}
 
-  // Auth modal logic
-  const loginBtn = document.getElementById('loginBtn');
-  const authModal = new bootstrap.Modal(document.getElementById('authModal'));
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const showRegister = document.getElementById('showRegister');
-  const loginMsg = document.getElementById('loginMsg');
-  const registerMsg = document.getElementById('registerMsg');
-  const navbar = document.querySelector('.navbar-nav');
+/**
+ * Hide search suggestions
+ */
+function hideSearchSuggestions() {
+    const existingSuggestions = document.querySelector('.search-suggestions');
+    if (existingSuggestions) {
+        existingSuggestions.remove();
+    }
+}
 
-  // Show/hide contribution button for logged-in users
-  const contributeNav = document.getElementById('contributeNav');
-  const contributeBtn = document.getElementById('contributeBtn');
-  const contributionModal = new bootstrap.Modal(document.getElementById('contributionModal'));
-  const contributionForm = document.getElementById('contributionForm');
-  const contributionMsg = document.getElementById('contributionMsg');
-  const userContributions = document.getElementById('userContributions');
-
-  function setUserNav(user) {
-    const profileNav = document.getElementById('profileNav');
-    if (user) {
-      loginBtn.style.display = 'none';
-      profileNav.style.display = '';
-      if (contributeNav) contributeNav.style.display = '';
-      if (!document.getElementById('logoutBtn')) {
-        const li = document.createElement('li');
-        li.className = 'nav-item';
-        li.innerHTML = '<a class="nav-link" href="#" id="logoutBtn">Logout</a>';
-        navbar.appendChild(li);
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-          e.preventDefault();
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
-          location.reload();
+/**
+ * Initialize notifications
+ */
+function initializeNotifications() {
+    // Request notification permission
+    if ('Notification' in window) {
+        Notification.requestPermission();
+    }
+    
+    // Set up notification handlers
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', function(event) {
+            if (event.data.type === 'notification') {
+                showNotification(event.data.title, event.data.body);
+            }
         });
-      }
+    }
+}
+
+/**
+ * Show notification
+ */
+function showNotification(title, body) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: body,
+            icon: '/assets/images/logo.png',
+            badge: '/assets/images/badge.png'
+        });
     } else {
-      loginBtn.style.display = '';
-      profileNav.style.display = 'none';
-      if (contributeNav) contributeNav.style.display = 'none';
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) logoutBtn.parentElement.remove();
+        // Fallback to toast notification
+        showToast(title, body);
     }
-  }
+}
 
-  // Show modal on login click
-  if (loginBtn) {
-    loginBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      loginForm.style.display = '';
-      registerForm.style.display = 'none';
-      loginMsg.textContent = '';
-      registerMsg.textContent = '';
-      authModal.show();
+/**
+ * Show toast notification
+ */
+function showToast(title, message) {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => toast.remove());
+    
+    // Create toast
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        max-width: 300px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    toast.innerHTML = `
+        <h6 class="mb-1">${title}</h6>
+        <p class="mb-0 small">${message}</p>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+/**
+ * Initialize PWA features
+ */
+function initializePWA() {
+    // Handle beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallPrompt();
     });
-  }
-
-  // Switch to register form
-  if (showRegister) {
-    showRegister.addEventListener('click', function() {
-      loginForm.style.display = 'none';
-      registerForm.style.display = '';
-      loginMsg.textContent = '';
-      registerMsg.textContent = '';
-      document.getElementById('authModalLabel').textContent = 'Register for TQRS';
+    
+    // Handle app installed event
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('App was installed');
+        hideInstallPrompt();
     });
-  }
+}
 
-  // Login form submit
-  if (loginForm) {
-    loginForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      loginMsg.textContent = '';
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (res.ok && data.access_token) {
-          localStorage.setItem('access_token', data.access_token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          setUserNav(data.user);
-          authModal.hide();
-        } else {
-          loginMsg.textContent = data.message || 'Login failed.';
-        }
-      } catch (err) {
-        loginMsg.textContent = 'Network error.';
-      }
-    });
-  }
-
-  // Register form submit
-  if (registerForm) {
-    registerForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      registerMsg.textContent = '';
-      const name = document.getElementById('registerName').value;
-      const email = document.getElementById('registerEmail').value;
-      const password = document.getElementById('registerPassword').value;
-      const password_confirmation = document.getElementById('registerPassword2').value;
-      try {
-        const res = await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, password_confirmation })
-        });
-        const data = await res.json();
-        if (res.ok && data.access_token) {
-          localStorage.setItem('access_token', data.access_token);
-          localStorage.setItem('user', JSON.stringify(data.user));
-          setUserNav(data.user);
-          authModal.hide();
-        } else {
-          registerMsg.textContent = data.message || 'Registration failed.';
-        }
-      } catch (err) {
-        registerMsg.textContent = 'Network error.';
-      }
-    });
-  }
-
-  // Show contribution modal
-  if (contributeBtn) {
-    contributeBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      contributionForm.reset();
-      contributionMsg.textContent = '';
-      contributionMsg.className = '';
-      contributionModal.show();
-    });
-  }
-
-  // Submit contribution
-  if (contributionForm) {
-    contributionForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      contributionMsg.textContent = '';
-      const btn = contributionForm.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      const title = document.getElementById('contributionTitle').value;
-      const description = document.getElementById('contributionDescription').value;
-      const fileInput = document.getElementById('contributionFile');
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      if (fileInput.files[0]) formData.append('file_url', fileInput.files[0]);
-      // Attach token
-      const token = localStorage.getItem('access_token');
-      try {
-        const res = await fetch('/api/research-contributions', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token },
-          body: formData
-        });
-        if (res.ok) {
-          contributionMsg.textContent = 'Contribution submitted!';
-          contributionMsg.className = 'text-success';
-          contributionForm.reset();
-          setTimeout(() => contributionModal.hide(), 1200);
-          loadUserContributions();
-        } else {
-          const data = await res.json();
-          contributionMsg.textContent = data.message || 'Submission failed.';
-          contributionMsg.className = 'text-danger';
-        }
-      } catch (err) {
-        contributionMsg.textContent = 'Network error.';
-        contributionMsg.className = 'text-danger';
-      }
-      btn.disabled = false;
-    });
-  }
-
-  // Load user's contributions in dashboard
-  function loadUserContributions() {
-    if (!userContributions) return;
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const token = localStorage.getItem('access_token');
-    if (!user.id || !token) {
-      userContributions.innerHTML = '';
-      return;
+/**
+ * Show PWA install prompt
+ */
+function showInstallPrompt() {
+    const prompt = document.getElementById('pwaInstallPrompt');
+    if (prompt) {
+        prompt.style.display = 'block';
     }
-    showSpinner(userContributions);
-    fetch(`/api/research-contributions?user_id=${user.id}`, {
-      headers: { 'Authorization': 'Bearer ' + token }
+}
+
+/**
+ * Hide PWA install prompt
+ */
+function hideInstallPrompt() {
+    const prompt = document.getElementById('pwaInstallPrompt');
+    if (prompt) {
+        prompt.style.display = 'none';
+    }
+}
+
+/**
+ * Install PWA
+ */
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            } else {
+                console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+            hideInstallPrompt();
+        });
+    }
+}
+
+/**
+ * Initialize offline detection
+ */
+function initializeOfflineDetection() {
+    window.addEventListener('online', function() {
+        isOnline = true;
+        showNotification('Connection Restored', 'You are back online!');
+        document.body.classList.remove('offline');
+    });
+    
+    window.addEventListener('offline', function() {
+        isOnline = false;
+        showNotification('Connection Lost', 'You are currently offline. Some features may be limited.');
+        document.body.classList.add('offline');
+    });
+}
+
+/**
+ * Initialize animations
+ */
+function initializeAnimations() {
+    // Intersection Observer for scroll animations
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        // Observe elements with animation classes
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+    }
+}
+
+/**
+ * Set up event listeners
+ */
+function setupEventListeners() {
+    // Language switcher
+    const langSelect = document.querySelector('select[name="lang"]');
+    if (langSelect) {
+        langSelect.addEventListener('change', function() {
+            const newLang = this.value;
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('lang', newLang);
+            window.location.href = currentUrl.toString();
+        });
+    }
+    
+    // Back to top button
+    const backToTopBtn = document.getElementById('backToTop');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+    
+    // Newsletter signup
+    const newsletterForm = document.querySelector('form[action*="newsletter"]');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = this.querySelector('input[type="email"]').value;
+            if (email) {
+                subscribeToNewsletter(email);
+            }
+        });
+    }
+}
+
+/**
+ * Subscribe to newsletter
+ */
+function subscribeToNewsletter(email) {
+    // In a real app, this would make an API call
+    fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email })
     })
-      .then(res => res.json())
-      .then(contributions => {
-        if (Array.isArray(contributions) && contributions.length > 0) {
-          userContributions.innerHTML = '<h6>Your Contributions</h6>' + contributions.map(c => `
-            <div class="border rounded p-2 mb-2">
-              <div><strong>${c.title}</strong></div>
-              <div class="small text-muted">${c.status || 'pending'}</div>
-              <div>${c.description || ''}</div>
-              ${c.file_url ? `<a href="${c.file_url}" target="_blank">Download File</a>` : ''}
-            </div>
-          `).join('');
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Success', 'You have been subscribed to our newsletter!');
         } else {
-          userContributions.innerHTML = '<h6>Your Contributions</h6><div class="text-muted">No contributions yet.</div>';
+            showToast('Error', 'Failed to subscribe. Please try again.');
         }
-      })
-      .catch(() => {
-        userContributions.innerHTML = '<div class="text-danger">Failed to load your contributions.</div>';
-      });
-  }
-
-  // Profile modal logic
-  const profileBtn = document.getElementById('profileBtn');
-  const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
-  const profileInfo = document.getElementById('profileInfo');
-  const logoutBtn2 = document.getElementById('logoutBtn2');
-
-  if (profileBtn) {
-    profileBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      profileInfo.innerHTML = `
-        <div class="mb-2"><strong>Name:</strong> ${user.name || ''}</div>
-        <div class="mb-2"><strong>Email:</strong> ${user.email || ''}</div>
-      `;
-      profileModal.show();
-      loadUserContributions();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error', 'Failed to subscribe. Please try again.');
     });
-  }
-  if (logoutBtn2) {
-    logoutBtn2.addEventListener('click', function() {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('user');
-      location.reload();
-    });
-  }
+}
 
-  // Contact form
-  const contactForm = document.getElementById('contactForm');
-  if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const name = document.getElementById('contactName').value;
-      const email = document.getElementById('contactEmail').value;
-      const message = document.getElementById('contactMessage').value;
-      const msg = document.getElementById('contactMsg');
-      msg.textContent = '';
-      const btn = contactForm.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      try {
-        // You can POST to a backend endpoint like /api/contact or /api/support-donations (if adapted)
-        const res = await fetch('/api/support-donations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ donor_name: name, donor_email: email, message })
-        });
-        if (res.ok) {
-          msg.textContent = 'Thank you for contacting us! We will get back to you soon.';
-          msg.className = 'text-success';
-          contactForm.reset();
-        } else {
-          const data = await res.json();
-          msg.textContent = data.message || 'Message failed to send.';
-          msg.className = 'text-danger';
+/**
+ * Utility function to format dates
+ */
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(currentLang, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+/**
+ * Utility function to format time
+ */
+function formatTime(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(hours, minutes);
+    return date.toLocaleTimeString(currentLang, {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+/**
+ * Utility function to truncate text
+ */
+function truncateText(text, maxLength) {
+    if (text.length <= maxLength) {
+        return text;
+    }
+    return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * Utility function to debounce
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
         }
-      } catch (err) {
-        msg.textContent = 'Network error.';
-        msg.className = 'text-danger';
-      }
-      btn.disabled = false;
-    });
-  }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .animate-on-scroll {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease-out;
+    }
+    
+    .animate-on-scroll.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .offline {
+        filter: grayscale(50%);
+    }
+    
+    .offline::before {
+        content: "You are offline";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #dc3545;
+        color: white;
+        text-align: center;
+        padding: 0.5rem;
+        z-index: 9999;
+    }
+`;
+document.head.appendChild(style);
 
-  // On load, set user nav if logged in
-  const user = localStorage.getItem('user');
-  setUserNav(user ? JSON.parse(user) : null);
-}); 
+// Export functions for use in other scripts
+window.TQRS = {
+    showNotification,
+    showToast,
+    formatDate,
+    formatTime,
+    truncateText,
+    debounce,
+    getCurrentLanguage: () => currentLang,
+    isOnline: () => isOnline
+}; 
