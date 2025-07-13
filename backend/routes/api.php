@@ -51,6 +51,10 @@ Route::get('articles', [BlogController::class, 'index']);
 Route::get('articles/{article}', [BlogController::class, 'show']);
 Route::get('articles/stats', [BlogController::class, 'stats']);
 
+// Public pages routes (for frontend display)
+Route::get('pages/published', [PageController::class, 'published']);
+Route::get('pages/slug/{slug}', [PageController::class, 'showBySlug']);
+
 // Public opportunities routes (for news reel)
 Route::get('opportunities', [OpportunityController::class, 'index']);
 Route::get('opportunities/latest', [OpportunityController::class, 'latest']);

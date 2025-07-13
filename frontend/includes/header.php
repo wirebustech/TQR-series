@@ -110,6 +110,11 @@ $texts = getTranslations($lang);
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="pages.php?lang=<?= urlencode($lang) ?>">
+                            <i class="bi bi-file-earmark-text"></i> <?= htmlspecialchars($texts['pages'] ?? 'Pages') ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="contact.php?lang=<?= urlencode($lang) ?>">
                             <i class="bi bi-envelope"></i> <?= htmlspecialchars($texts['contact']) ?>
                         </a>

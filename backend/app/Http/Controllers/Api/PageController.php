@@ -66,6 +66,34 @@ class PageController extends Controller
     }
 
     /**
+     * List published pages for public access
+     */
+    public function published(Request $request): JsonResponse
+    {
+        $query = Page::query()->published();
+        
+        // Language filter
+        if ($request->has('language')) {
+            $query->byLanguage($request->language);
+        }
+        
+        // Search filter
+        if ($request->has('search')) {
+            $query->search($request->search);
+        }
+        
+        // Order by
+        $query->orderBy($request->get('order_by', 'created_at'), $request->get('order_direction', 'desc'));
+        
+        $pages = $query->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $pages
+        ]);
+    }
+
+    /**
      * Show a single page
      */
     public function show($id): JsonResponse

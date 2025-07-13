@@ -55,6 +55,7 @@ function getTranslations($lang = 'en') {
             'dashboard' => 'Dashboard',
             'search' => 'Search',
             'research_ai' => 'Research AI',
+            'pages' => 'Pages',
             
             // Opportunities
             'opportunities_title' => 'Latest Opportunities',
@@ -102,6 +103,7 @@ function getTranslations($lang = 'en') {
             'dashboard' => 'Tableau de bord',
             'search' => 'Recherche',
             'research_ai' => 'IA de recherche',
+            'pages' => 'Pages',
             
             // Opportunities
             'opportunities_title' => 'Dernières Opportunités',
@@ -149,6 +151,7 @@ function getTranslations($lang = 'en') {
             'dashboard' => 'Panel de control',
             'search' => 'Buscar',
             'research_ai' => 'IA de investigación',
+            'pages' => 'Páginas',
             
             // Opportunities
             'opportunities_title' => 'Últimas Oportunidades',
