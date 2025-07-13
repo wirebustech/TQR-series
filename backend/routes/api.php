@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\ResearchContributionController;
 use App\Http\Controllers\Api\SupportDonationController;
 use App\Http\Controllers\Api\NewsletterSubscriptionController;
 use App\Http\Controllers\Api\WebinarController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\AnalyticsController;
 
 // Authentication
 Route::post('register', [AuthController::class, 'register']);
@@ -48,4 +50,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('webinars/{webinar}', [WebinarController::class, 'update']);
     Route::delete('webinars/{webinar}', [WebinarController::class, 'destroy']);
     Route::post('webinars/bulk-action', [WebinarController::class, 'bulkAction']);
+    
+    // Users (admin operations)
+    Route::apiResource('users', UserController::class);
+    Route::get('users/stats', [UserController::class, 'stats']);
+    Route::post('users/bulk-action', [UserController::class, 'bulkAction']);
+    
+    // Analytics (admin operations)
+    Route::prefix('analytics')->group(function () {
+        Route::get('user-growth', [AnalyticsController::class, 'getUserGrowth']);
+        Route::get('user-distribution', [AnalyticsController::class, 'getUserDistribution']);
+        Route::get('webinar-performance', [AnalyticsController::class, 'getWebinarPerformance']);
+        Route::get('contribution-status', [AnalyticsController::class, 'getContributionStatus']);
+        Route::get('recent-activity', [AnalyticsController::class, 'getRecentActivity']);
+        Route::get('top-content', [AnalyticsController::class, 'getTopContent']);
+        Route::get('overview', [AnalyticsController::class, 'getOverview']);
+        Route::get('export-report', [AnalyticsController::class, 'exportReport']);
+    });
+    
+    // User profile (authenticated users)
+    Route::get('profile', [UserController::class, 'profile']);
+    Route::put('profile', [UserController::class, 'updateProfile']);
 });

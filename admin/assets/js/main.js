@@ -103,6 +103,17 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(res => res.json()).then(data => {
         document.getElementById('statWebinars').textContent = data.data ? data.data.total : '...';
       });
+    fetch('/api/users/stats', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(res => res.json()).then(data => {
+        document.getElementById('statUsers').textContent = data.data ? data.data.total : '...';
+      });
+    fetch('/api/analytics/overview', { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(res => res.json()).then(data => {
+        if (data.data) {
+          document.getElementById('statWebinars').textContent = data.data.webinars.total || '...';
+          document.getElementById('statUsers').textContent = data.data.users.total || '...';
+        }
+      });
   }
 
   // Pages Management

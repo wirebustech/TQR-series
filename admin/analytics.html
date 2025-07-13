@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - TQRS Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/css/admin.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>TQRS Admin</h3>
+            </div>
+            <ul class="list-unstyled components">
+                <li>
+                    <a href="dashboard.html">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="pages.html">
+                        <i class="bi bi-file-text"></i> Pages
+                    </a>
+                </li>
+                <li>
+                    <a href="blogs.html">
+                        <i class="bi bi-journal-text"></i> Blogs
+                    </a>
+                </li>
+                <li>
+                    <a href="webinars.html">
+                        <i class="bi bi-camera-video"></i> Webinars
+                    </a>
+                </li>
+                <li>
+                    <a href="users.html">
+                        <i class="bi bi-people"></i> Users
+                    </a>
+                </li>
+                <li>
+                    <a href="contributions.html">
+                        <i class="bi bi-file-earmark-text"></i> Contributions
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="analytics.html">
+                        <i class="bi bi-graph-up"></i> Analytics
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="ms-auto">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> Admin
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="bi bi-graph-up"></i> Analytics Dashboard</h2>
+                            <div>
+                                <button class="btn btn-outline-primary me-2" id="refreshDataBtn">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                                </button>
+                                <button class="btn btn-success" id="exportReportBtn">
+                                    <i class="bi bi-download"></i> Export Report
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Date Range Filter -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="dateRange" class="form-label">Date Range</label>
+                                        <select class="form-select" id="dateRange">
+                                            <option value="7">Last 7 Days</option>
+                                            <option value="30" selected>Last 30 Days</option>
+                                            <option value="90">Last 3 Months</option>
+                                            <option value="365">Last Year</option>
+                                            <option value="custom">Custom Range</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="customDateFrom" class="form-label">From Date</label>
+                                        <input type="date" class="form-control" id="customDateFrom" disabled>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="customDateTo" class="form-label">To Date</label>
+                                        <input type="date" class="form-control" id="customDateTo" disabled>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button class="btn btn-primary d-block" id="applyDateRangeBtn">
+                                            <i class="bi bi-funnel"></i> Apply Filter
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Key Metrics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="totalUsers">0</h4>
+                                                <p class="card-text">Total Users</p>
+                                                <small id="userGrowth">+0% from last period</small>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-people fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="totalWebinars">0</h4>
+                                                <p class="card-text">Total Webinars</p>
+                                                <small id="webinarGrowth">+0% from last period</small>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-camera-video fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="totalContributions">0</h4>
+                                                <p class="card-text">Contributions</p>
+                                                <small id="contributionGrowth">+0% from last period</small>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-file-earmark-text fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h4 class="card-title" id="totalBlogs">0</h4>
+                                                <p class="card-text">Blog Posts</p>
+                                                <small id="blogGrowth">+0% from last period</small>
+                                            </div>
+                                            <div class="align-self-center">
+                                                <i class="bi bi-journal-text fs-1"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row 1 -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">User Growth Over Time</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="userGrowthChart" height="100"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">User Distribution</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="userDistributionChart" height="100"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Row 2 -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Webinar Performance</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="webinarPerformanceChart" height="100"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Contribution Status</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="contributionStatusChart" height="100"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity and Engagement -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Recent Activity</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="recentActivity" class="list-group list-group-flush">
+                                            <!-- Activity items will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Top Performing Content</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="topContent" class="list-group list-group-flush">
+                                            <!-- Top content items will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Statistics Tables -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">User Statistics</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>New Users This Month</td>
+                                                        <td id="newUsersMonth">0</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Active Users</td>
+                                                        <td id="activeUsers">0</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Email Verified</td>
+                                                        <td id="verifiedUsers">0</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Admin Users</td>
+                                                        <td id="adminUsers">0</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">Content Statistics</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Published Blogs</td>
+                                                        <td id="publishedBlogs">0</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Upcoming Webinars</td>
+                                                        <td id="upcomingWebinars">0</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Approved Contributions</td>
+                                                        <td id="approvedContributions">0</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Total Pages</td>
+                                                        <td id="totalPages">0</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/analytics.js"></script>
+</body>
+</html> 
