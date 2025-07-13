@@ -8,6 +8,7 @@ $texts = [
     'webinars' => 'Webinars',
     'blog' => 'Blog',
     'research' => 'Research',
+    'ai_app' => 'AI App',
     'contact' => 'Contact',
     'login' => 'Login',
     'register' => 'Register',
@@ -114,6 +115,11 @@ if ($lang !== 'en') {
                     <li class="nav-item">
                         <a class="nav-link" href="research.php?lang=<?= urlencode($lang) ?>">
                             <i class="bi bi-search"></i> <?= htmlspecialchars($texts['research']) ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="research-ai.php?lang=<?= urlencode($lang) ?>">
+                            <i class="bi bi-robot"></i> <?= htmlspecialchars($texts['ai_app']) ?>
                         </a>
                     </li>
                     <li class="nav-item">
