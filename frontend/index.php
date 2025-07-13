@@ -152,6 +152,9 @@ if ($lang !== 'en') {
         </div>
     </section>
 
+    <!-- Opportunities News Reel -->
+    <?php include 'components/opportunities-reel.php'; ?>
+
     <!-- Features Section -->
     <section class="py-5">
         <div class="container">
@@ -165,7 +168,7 @@ if ($lang !== 'en') {
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                <i class="bi bi-camera-video text-primary fs-1"></i>
+                                <i class="bi bi-camera-video text-primary fs-4"></i>
                             </div>
                             <h5 class="card-title"><?= htmlspecialchars($texts['feature_webinars_title']) ?></h5>
                             <p class="card-text text-muted"><?= htmlspecialchars($texts['feature_webinars_desc']) ?></p>
@@ -178,7 +181,7 @@ if ($lang !== 'en') {
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                <i class="bi bi-robot text-success fs-1"></i>
+                                <i class="bi bi-robot text-success fs-4"></i>
                             </div>
                             <h5 class="card-title"><?= htmlspecialchars($texts['feature_ai_title']) ?></h5>
                             <p class="card-text text-muted"><?= htmlspecialchars($texts['feature_ai_desc']) ?></p>
@@ -191,7 +194,7 @@ if ($lang !== 'en') {
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                <i class="bi bi-people text-warning fs-1"></i>
+                                <i class="bi bi-people text-warning fs-4"></i>
                             </div>
                             <h5 class="card-title"><?= htmlspecialchars($texts['feature_community_title']) ?></h5>
                             <p class="card-text text-muted"><?= htmlspecialchars($texts['feature_community_desc']) ?></p>
@@ -204,7 +207,7 @@ if ($lang !== 'en') {
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                <i class="bi bi-journal-text text-info fs-1"></i>
+                                <i class="bi bi-journal-text text-info fs-4"></i>
                             </div>
                             <h5 class="card-title"><?= htmlspecialchars($texts['feature_resources_title']) ?></h5>
                             <p class="card-text text-muted"><?= htmlspecialchars($texts['feature_resources_desc']) ?></p>

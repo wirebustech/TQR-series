@@ -21,8 +21,40 @@ use App\Http\Controllers\Api\AdvancedAnalyticsController;
 use App\Http\Controllers\Api\SitemapController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\OpportunityController;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ContentManagementController;
+
+// Health and status endpoints
+Route::get('health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'timestamp' => now(),
+        'version' => '1.0.0'
+    ]);
+});
+
+Route::get('status', function () {
+    return response()->json([
+        'status' => 'operational',
+        'services' => [
+            'database' => 'connected',
+            'cache' => 'operational',
+            'queue' => 'operational'
+        ]
+    ]);
+});
+
+// Public articles routes
+Route::get('articles', [BlogController::class, 'index']);
+Route::get('articles/{article}', [BlogController::class, 'show']);
+Route::get('articles/stats', [BlogController::class, 'stats']);
+
+// Public opportunities routes (for news reel)
+Route::get('opportunities', [OpportunityController::class, 'index']);
+Route::get('opportunities/latest', [OpportunityController::class, 'latest']);
+Route::get('opportunities/{opportunity}', [OpportunityController::class, 'show']);
+Route::get('opportunities/stats', [OpportunityController::class, 'stats']);
 
 // Authentication
 Route::post('register', [AuthController::class, 'register']);
@@ -69,6 +101,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('research-contributions', ResearchContributionController::class);
     Route::apiResource('support-donations', SupportDonationController::class);
     Route::apiResource('newsletter-subscriptions', NewsletterSubscriptionController::class);
+    
+    // Opportunities (admin operations)
+    Route::post('opportunities', [OpportunityController::class, 'store']);
+    Route::put('opportunities/{opportunity}', [OpportunityController::class, 'update']);
+    Route::delete('opportunities/{opportunity}', [OpportunityController::class, 'destroy']);
     
     // Webinars (admin operations)
     Route::post('webinars', [WebinarController::class, 'store']);
@@ -141,3 +178,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Webhook routes (no auth required)
 Route::post('webhooks/stripe', [PaymentController::class, 'handleWebhook']);
+
+// Beta waitlist (public)
+Route::post('beta-waitlist', [BetaSignupController::class, 'store']);
